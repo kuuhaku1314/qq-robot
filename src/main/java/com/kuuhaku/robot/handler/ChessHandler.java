@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -29,7 +30,7 @@ import java.util.Map;
 @HandlerComponent
 @Slf4j
 public class ChessHandler {
-    public static Map<String, ChessGroup> chessGroupMap = new HashMap<>();
+    public static Map<String, ChessGroup> chessGroupMap = new ConcurrentHashMap<>();
     @Autowired
     private ChessService chessService;
 

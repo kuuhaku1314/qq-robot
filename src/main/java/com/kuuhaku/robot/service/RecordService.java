@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -30,7 +31,7 @@ public class RecordService {
     /**
      * key:groupId:messageIds
      */
-    private Map<String, String> map = new HashMap<>();
+    private Map<String, String> map = new ConcurrentHashMap<>();
 
     private final int maxSize = 10000;
 

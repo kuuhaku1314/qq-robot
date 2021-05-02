@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -30,7 +31,7 @@ import java.util.Map;
 @HandlerComponent
 @Slf4j
 public class OthelloHandler {
-    public static Map<String, OthelloGroup> othelloGroupMap = new HashMap<>();
+    public static Map<String, OthelloGroup> othelloGroupMap = new ConcurrentHashMap<>();
     @Autowired
     private OthelloService othelloService;
 

@@ -30,7 +30,7 @@ public class MessageRecallEvents extends SimpleListenerHost {
     @NotNull
     @EventHandler
     public ListeningStatus onMessage(@NotNull MessageRecallEvent.GroupRecall event) throws Exception {
-        //recallHandler.doHandler(event);
+        // recallHandler.doHandler(event);
         return ListeningStatus.LISTENING;
     }
 }

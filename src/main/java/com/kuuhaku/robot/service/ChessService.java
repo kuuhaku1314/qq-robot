@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -21,12 +22,12 @@ public class ChessService {
     /**
      * key red:black:groupId
      */
-    public final Map<String, ChessBoard> chessBoardGroup = new HashMap<>();
+    public final Map<String, ChessBoard> chessBoardGroup = new ConcurrentHashMap<>();
 
     /**
      * 对战者与其对手的关系map
      */
-    public final Map<String, String> userBattleMap = new HashMap<>();
+    public final Map<String, String> userBattleMap = new ConcurrentHashMap<>();
 
     public synchronized ChessBoard createChessBoard(String red, String black, String group) {
         if (userBattleMap.containsKey(red) || userBattleMap.containsKey(black)) {

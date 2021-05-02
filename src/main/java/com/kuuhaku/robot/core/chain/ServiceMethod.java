@@ -1,4 +1,4 @@
-package com.kuuhaku.robot.common.object;
+package com.kuuhaku.robot.core.chain;
 
 import lombok.Data;
 

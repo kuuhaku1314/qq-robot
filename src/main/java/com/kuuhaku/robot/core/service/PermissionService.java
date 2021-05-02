@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author by kuuhaku
@@ -17,19 +19,19 @@ public class PermissionService {
     /**
      * master权限
      */
-    private final Set<Long> masterSet = new HashSet<>();
+    private final Set<Long> masterSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
     /**
      * 管理员权限
      */
-    private final Set<Long> adminSet = new HashSet<>();
+    private final Set<Long> adminSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
     /**
      * 无权限
      */
-    private final Set<Long> minusSet = new HashSet<>();
+    private final Set<Long> minusSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
     /**
      * 排除哪些群不执行指令
      */
-    private final Set<Long> exclusionGroup = new HashSet<>();
+    private final Set<Long> exclusionGroup = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Value("${robot.master}")
     private long master;

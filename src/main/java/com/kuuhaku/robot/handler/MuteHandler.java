@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -27,7 +28,7 @@ import java.util.Set;
  */
 @HandlerComponent
 public class MuteHandler {
-    private final Map<String, Set<String>> map = new HashMap<>();
+    private final Map<String, Set<String>> map = new ConcurrentHashMap<>();
 
     @Handler(order = -100)
     public void toMute(ChannelContext ctx) {

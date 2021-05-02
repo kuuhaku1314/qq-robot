@@ -3,7 +3,6 @@ package com.kuuhaku.robot.core.chain;
 import com.kuuhaku.robot.common.annotation.Handler;
 import com.kuuhaku.robot.common.annotation.HandlerComponent;
 import com.kuuhaku.robot.common.constant.HandlerMatchType;
-import com.kuuhaku.robot.common.object.ServiceMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;

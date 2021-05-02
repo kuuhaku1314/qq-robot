@@ -23,14 +23,14 @@ public class TimeJob {
     /**
      * 每天 23:00:00 执行
      */
-    //@Scheduled(cron = "0 0 23 * * ?")
+    // @Scheduled(cron = "0 0 23 * * ?")
     public void doTaskTwo() {
         Bot bot = robot.getBot();
         ContactList<Group> groups = bot.getGroups();
         MessageChain messageChain = MessageUtils.newChain();
         messageChain = messageChain.plus("robot提醒你已经晚上11点了，早点睡");
         for (Group group : groups) {
-            if (group.getBotMuteRemaining() <= 0) {
+            if (!group.getBotAsMember().isMuted()) {
                 group.sendMessage(messageChain);
             }
         }
@@ -39,14 +39,14 @@ public class TimeJob {
     /**
      * 每天 07:00:00 执行
      */
-    //@Scheduled(cron = "0 0 7 * * ?")
+    // @Scheduled(cron = "0 0 7 * * ?")
     public void doTaskOne() {
         Bot bot = robot.getBot();
         ContactList<Group> groups = bot.getGroups();
         MessageChain messageChain = MessageUtils.newChain();
         messageChain = messageChain.plus("robot提醒你已经早上7点了");
         for (Group group : groups) {
-            if (group.getBotMuteRemaining() <= 0) {
+            if (!group.getBotAsMember().isMuted()) {
                 group.sendMessage(messageChain);
             }
         }

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -38,7 +39,7 @@ public class MusicHandler {
     @Autowired
     private ImageService imageService;
 
-    private final Map<String, List<NetEaseMusic>> map = new HashMap<>();
+    private final Map<String, List<NetEaseMusic>> map = new ConcurrentHashMap<>();
 
     @Permission
     @Handler(values = {"点歌"}, types = {HandlerMatchType.START})

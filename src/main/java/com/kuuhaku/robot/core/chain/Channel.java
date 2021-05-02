@@ -22,7 +22,7 @@ public interface Channel {
 
     /**
      * 执行顺序
-     * @return
+     * @return 按从小到大执行
      */
     int order();
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author   by kuuhaku
@@ -18,9 +19,9 @@ import java.util.Map;
  */
 @Service
 public class OthelloService {
-    public final Map<String, OthelloBoard> othelloBoardGroup = new HashMap<>();
+    public final Map<String, OthelloBoard> othelloBoardGroup = new ConcurrentHashMap<>();
 
-    public final Map<String, String> userBattleMap = new HashMap<>();
+    public final Map<String, String> userBattleMap = new ConcurrentHashMap<>();
 
     public OthelloBoard getChessBoard(String user, String groupId) {
         String userTwo = userBattleMap.get(user);

@@ -1,6 +1,5 @@
 package com.kuuhaku.robot.core.chain;
 
-import com.kuuhaku.robot.common.object.ServiceMethod;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
