@@ -74,7 +74,6 @@ public class ImageApiService {
             }
             inStream.close();
             //把图片信息存下来，写入内存
-            String uuid = UUID.randomUUID().toString();
             byte[] data = outStream.toByteArray();
             // 固定文件名
             String filePath = downloadService.getRandomPngPath();

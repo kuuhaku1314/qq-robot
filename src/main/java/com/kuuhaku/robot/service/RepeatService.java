@@ -20,7 +20,7 @@ public class RepeatService {
     /**
      * 排除那些词不进行复读
      */
-    private static final List<String> KEYWORDS = new ArrayList<>();
+    private static final Set<String> KEYWORDS = new HashSet<>();
     static {
         KEYWORDS.add("[图片]");
         KEYWORDS.add("[语音消息]");
@@ -31,15 +31,12 @@ public class RepeatService {
     }
 
     public void tryRepeat(MessageEvent event) {
-        String message = event.getMessage().contentToString();
+        String content = event.getMessage().contentToString();
         // 关键词不复读
-        for (String keyWord : KEYWORDS) {
-            if (message.contains(keyWord)) {
-                return;
-            }
+        if (KEYWORDS.contains(content)) {
+            return;
         }
         String groupId = event.getSubject().getId() + "";
-        String content = event.getMessage().contentToString();
         String s = map.get(groupId);
         if (s != null && s.equals(content)) {
             if (RandomUtil.isPass(30)) {

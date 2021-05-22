@@ -1,6 +1,7 @@
 package com.kuuhaku.robot.handler.unity;
 
 import com.kuuhaku.robot.common.annotation.HandlerComponent;
+import com.kuuhaku.robot.utils.RandomUtil;
 import net.mamoe.mirai.contact.UserOrBot;
 import net.mamoe.mirai.event.events.NudgeEvent;
 import net.mamoe.mirai.message.data.PokeMessage;
@@ -16,7 +17,7 @@ import java.util.Random;
  */
 @HandlerComponent
 public class NudgeHandler {
-    public static List<PokeMessage> pokeMsg = new ArrayList<>();
+    public final static List<PokeMessage> pokeMsg = new ArrayList<>();
     static {
         pokeMsg.add(PokeMessage.FangDaZhao);
         pokeMsg.add(PokeMessage.BiXin);
@@ -31,9 +32,8 @@ public class NudgeHandler {
         UserOrBot from = event.getFrom();
         UserOrBot target = event.getTarget();
         if (from.getId() != event.getBot().getId() && target.getId() == event.getBot().getId()) {
-            int i = new Random(System.currentTimeMillis()).nextInt(5);
-            if (i > 2) {
-                int randomNum = new Random(System.currentTimeMillis()).nextInt(pokeMsg.size());
+            if (RandomUtil.isPass(40)) {
+                int randomNum = RandomUtil.random(pokeMsg.size());
                 PokeMessage msg = pokeMsg.get(randomNum);
                 event.getSubject().sendMessage(msg);
                 return;

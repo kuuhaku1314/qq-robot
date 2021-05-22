@@ -108,9 +108,11 @@ public class PetPetService {
             throwImageStream = new FileInputStream(diuPath);
             BufferedImage throwImage = ImageIO.read(throwImageStream);
             throwImageStream.close();
+            throwImageStream = null;
             iconStream = new FileInputStream(path);
             BufferedImage icon = ImageIO.read(iconStream);
             iconStream.close();
+            iconStream = null;
             icon = roundImage(icon, icon.getHeight(), icon.getHeight());
             Image iconOne = icon.getScaledInstance(124, 124, Image.SCALE_SMOOTH);
             throwImage.getGraphics().drawImage(iconOne, 20, 192 ,null);
@@ -118,6 +120,9 @@ public class PetPetService {
             ImageIO.write(throwImage, "png", new File(outPath));
             return outPath;
         } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
             try {
                 if (throwImageStream != null) {
                     throwImageStream.close();
@@ -127,10 +132,7 @@ public class PetPetService {
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();
-                return null;
             }
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -142,9 +144,11 @@ public class PetPetService {
             paImageStream = new FileInputStream(list.get(i));
             BufferedImage paImage = ImageIO.read(paImageStream);
             paImageStream.close();
+            paImageStream = null;
             iconStream = new FileInputStream(path);
             BufferedImage icon = ImageIO.read(iconStream);
             iconStream.close();
+            iconStream = null;
             icon = roundImage(icon, icon.getHeight(), icon.getHeight());
             Image iconOne = icon.getScaledInstance(paImage.getWidth() / 5, paImage.getHeight() / 5, Image.SCALE_SMOOTH);
             paImage.getGraphics().drawImage(iconOne, 0, paImage.getHeight() - paImage.getHeight() / 5 ,null);
@@ -152,6 +156,9 @@ public class PetPetService {
             ImageIO.write(paImage, "png", new File(outPath));
             return outPath;
         } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
             try {
                 if (paImageStream != null) {
                     paImageStream.close();
@@ -161,10 +168,7 @@ public class PetPetService {
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();
-                return null;
             }
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -176,6 +180,7 @@ public class PetPetService {
             iconStream = new FileInputStream(path);
             BufferedImage icon = ImageIO.read(iconStream);
             iconStream.close();
+            iconStream = null;
             icon = roundImage(icon, icon.getHeight(), icon.getWidth());
             Image iconOne = icon.getScaledInstance((int)(iconWidth[0] * 1.2), (int)(iconHeight[0] * 1.2), Image.SCALE_SMOOTH);
             Image iconTwo = icon.getScaledInstance((int)(iconWidth[1] * 1.2), (int)(iconHeight[1] * 1.2), Image.SCALE_SMOOTH);
@@ -210,8 +215,12 @@ public class PetPetService {
             encoder.addFrame(imageFive);
             encoder.finish();
             out.close();
+            out = null;
             return outPath;
         } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
             try {
                 if (out != null) {
                     out.close();
@@ -221,10 +230,7 @@ public class PetPetService {
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();
-                return null;
             }
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -340,7 +346,8 @@ public class PetPetService {
             return null;
         }
         MessageChain messageChain = MessageUtils.newChain();
-        String avatarUrl = member.getAvatarUrl();
+        String avatarUrl = messageEvent.getBot().getId() == member.getId() ?
+                messageEvent.getSender().getAvatarUrl() : member.getAvatarUrl();
         String path = downloadService.getRandomPngPath();
         downloadService.download(avatarUrl, path);
         String diu = toThrow(path);

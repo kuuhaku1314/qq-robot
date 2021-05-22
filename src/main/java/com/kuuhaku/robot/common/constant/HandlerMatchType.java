@@ -28,7 +28,7 @@ public class HandlerMatchType {
     public static final int END = 3;
 
     /**
-     * 所有message都匹配，优先度最低，此类为链式执行
+     * 所有message都匹配，执行优先度最高，此类为链式执行
      */
     public static final int ALL = 4;
 }

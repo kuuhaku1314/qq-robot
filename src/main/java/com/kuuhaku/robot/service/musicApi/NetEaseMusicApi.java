@@ -16,6 +16,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * @Author   by kuuhaku
@@ -86,15 +88,10 @@ public class NetEaseMusicApi {
         String picUrl = netEaseMusic.getPicUrl();
         String jumpUrl = "https://music.163.com/#/song?id=" + netEaseMusic.getId();
         String title = netEaseMusic.getName();
-        StringBuilder summary = new StringBuilder();
+        String summary;
         List<String> artists = netEaseMusic.getArtists();
-        for (int i = 0; i < artists.size(); i++) {
-            if (i < artists.size() - 1) {
-                summary.append(artists.get(i)).append("/");
-            }
-            summary.append(artists.get(i));
-        }
-        return new MusicShare(MusicKind.NeteaseCloudMusic, title, summary.toString(), jumpUrl, picUrl, musicUrl);
+        summary = String.join("/", artists);
+        return new MusicShare(MusicKind.NeteaseCloudMusic, title, summary, jumpUrl, picUrl, musicUrl);
     }
 
     public String getMusicUrl(NetEaseMusic netEaseMusic) {

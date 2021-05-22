@@ -65,13 +65,7 @@ public class MusicService {
         for (int i = 0; i < list.size(); i++) {
             imageInfo.append(i + 1).append(". ").append(list.get(i).getName()).append(" - ");
             List<String> artists = list.get(i).getArtists();
-            for (String artist : artists) {
-                if (!artist.equals(artists.get(artists.size() - 1))) {
-                    imageInfo.append(artist).append("/");
-                } else {
-                    imageInfo.append(artist);
-                }
-            }
+            imageInfo.append(String.join("/", artists));
             imageInfo.append("\n");
         }
         String imagePath = downloadService.getRandomPngPath();
@@ -104,18 +98,15 @@ public class MusicService {
         AudioAttributes audio = new AudioAttributes();
         int mp3TrackLength = getMp3TrackLength(source);
         log.info("当前歌曲[{}]的长度为[{}]s", netEaseMusic.getName(), mp3TrackLength);
+        audio.setCodec("libamr_wb");
+        audio.setChannels(1);
+        audio.setSamplingRate(16000);
         // 长于300S文件改成低质量格式，防止无法播放
         if (mp3TrackLength > maxTrackLength) {
             log.info("进行低音质转换");
-            audio.setCodec("libamr_wb");
             audio.setBitRate(15850);
-            audio.setChannels(1);
-            audio.setSamplingRate(16000);
         } else {
-            audio.setCodec("libamr_wb");
             audio.setBitRate(23850);
-            audio.setChannels(1);
-            audio.setSamplingRate(16000);
         }
         EncodingAttributes attrs = new EncodingAttributes();
         attrs.setFormat("amr");

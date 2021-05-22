@@ -33,7 +33,7 @@ public class RecordService {
      */
     private Map<String, String> map = new ConcurrentHashMap<>();
 
-    private final int maxSize = 10000;
+    private static final int MAX_SIZE = 10000;
 
     @Value("${robot.temp.path}")
     public String voicePath;
@@ -45,7 +45,7 @@ public class RecordService {
 
     public void record(String groupId, MessageChain messageChain) {
         String messageIds = getMessageIds(messageChain);
-        if (map.size() > maxSize) {
+        if (map.size() > MAX_SIZE) {
             map = new HashMap<>(1000);
         }
         Voice voice = messageChain.get(Voice.Key);
@@ -82,9 +82,9 @@ public class RecordService {
 
     /**
      * 撤回专用，针对语音做了处理
-     * @param event
-     * @param messageIds
-     * @return
+     * @param event 撤回事件
+     * @param messageIds 撤回的消息id
+     * @return 消息
      */
     public MessageChain getMessage(MessageRecallEvent.GroupRecall event, String messageIds) {
         String groupId = event.getGroup().getId() + "";

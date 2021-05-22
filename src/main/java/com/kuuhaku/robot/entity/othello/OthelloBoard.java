@@ -314,11 +314,7 @@ public class OthelloBoard {
      * @return 是否超时
      */
     public boolean checkAlive() {
-        if (System.currentTimeMillis() - createTime > MAX_ALIVE_TIME) {
-            return false;
-        } else {
-            return true;
-        }
+        return System.currentTimeMillis() - createTime <= MAX_ALIVE_TIME;
     }
 
 
