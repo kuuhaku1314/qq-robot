@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * @Description
  */
 @Slf4j
-public class Command implements ICommand{
+public class Command implements ICommand {
 
     public static final String SEPARATOR = " ";
 
@@ -72,7 +72,8 @@ public class Command implements ICommand{
     }
 
     /**
-     * 尾匹配参数和指令翻转，所以获取指令请用这个
+     * 尾匹配参数会指令翻转，所以获取指令请用这个
+     *
      * @return 翻转指令
      */
     Command reverseCommand() {

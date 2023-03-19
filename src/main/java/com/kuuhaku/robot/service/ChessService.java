@@ -7,13 +7,12 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/11 8:46
+ * @Author by kuuhaku
+ * @Date 2021/2/11 8:46
  * @Description 下井字棋
  */
 @Service
@@ -62,8 +61,8 @@ public class ChessService {
         if (!chessBoard.checkAlive() || !chessBoard.checkEnableDo()) {
             userBattleMap.remove(user);
             userBattleMap.remove(userTwo);
-            chessBoardGroup.remove(user + ":" + userTwo+ ":" + group);
-            chessBoardGroup.remove(userTwo + ":" + user+ ":" + group);
+            chessBoardGroup.remove(user + ":" + userTwo + ":" + group);
+            chessBoardGroup.remove(userTwo + ":" + user + ":" + group);
             return "当前对局已结束";
         }
         boolean flag = chessBoard.operate(user, operateName, chessName);

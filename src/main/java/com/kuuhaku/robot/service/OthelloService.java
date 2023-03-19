@@ -1,158 +1,171 @@
 package com.kuuhaku.robot.service;
 
-import com.kuuhaku.robot.entity.chess.ChessConstant;
+import com.kuuhaku.robot.entity.othello.ChessChannel;
+import com.kuuhaku.robot.entity.othello.ChessOperation;
 import com.kuuhaku.robot.entity.othello.OthelloBoard;
 import com.kuuhaku.robot.entity.othello.OthelloConstant;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageUtils;
+import net.mamoe.mirai.contact.Contact;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/11 15:42
- * @Description 黑白棋service
+ * @author by kuuhaku
+ * @date 2022/4/16 14:25
+ * @description
  */
 @Service
 public class OthelloService {
-    public final Map<String, OthelloBoard> othelloBoardGroup = new ConcurrentHashMap<>();
 
-    public final Map<String, String> userBattleMap = new ConcurrentHashMap<>();
+    private final Map<Long, Map<Long, OthelloBoard>> prepareMap = new HashMap<>();
 
-    public OthelloBoard getChessBoard(String user, String groupId) {
-        String userTwo = userBattleMap.get(user);
-        OthelloBoard othelloBoard = othelloBoardGroup.get(user + ":" + userTwo + ":" + groupId);
-        if (othelloBoard == null) {
-            othelloBoard = othelloBoardGroup.get(userTwo + ":" + user + ":" + groupId);
+    private final Map<String, ChessChannel> chessChannelMap = new HashMap<>();
+    private final Map<String, String> playerMap = new HashMap<>();
+
+    private final ReentrantLock lock = new ReentrantLock();
+
+    private final Map<Long, String> usernameMap = new HashMap<>();
+
+    public final static int OK = 0;
+    public final static int NOT_FOUND_BOARD = 1;
+    public final static int YOU_CREATED_BOARD = 2;
+    public final static int YOU_IN_BOARD = 3;
+    public final static int OTHERS_CREATED_BOARD = 4;
+
+    public int join(Long groupId, Long userId, String username, Contact group, boolean hasAI) {
+        lock.lock();
+        usernameMap.put(userId, username);
+        Map<Long, OthelloBoard> map = prepareMap.get(groupId);
+        if (map == null || map.size() == 0) {
+            lock.unlock();
+            return NOT_FOUND_BOARD;
         }
-        return othelloBoard;
+        String chessChannelKey = generateChessChannelKey(groupId, userId);
+        if (chessChannelMap.containsKey(chessChannelKey)) {
+            lock.unlock();
+            return YOU_IN_BOARD;
+        }
+        Long otherUserId = null;
+        OthelloBoard othelloBoard = null;
+        for (Map.Entry<Long, OthelloBoard> entry : map.entrySet()) {
+            otherUserId = entry.getKey();
+            othelloBoard = entry.getValue();
+        }
+        if (otherUserId.equals(userId)) {
+            lock.unlock();
+            return YOU_CREATED_BOARD;
+        }
+        int aiNum = hasAI ? 1 : 0;
+        ChessChannel chessChannel = othelloBoard.start(otherUserId + "", usernameMap.get(otherUserId), userId + "", username, OthelloConstant.BLACK, aiNum);
+        chessChannelMap.put(chessChannelKey, chessChannel);
+        chessChannelMap.put(generateChessChannelKey(groupId, otherUserId), chessChannel);
+        playerMap.put(chessChannelKey, generateChessChannelKey(groupId, otherUserId));
+        playerMap.put(generateChessChannelKey(groupId, otherUserId), chessChannelKey);
+        map.clear();
+        Long finalOtherUserId = otherUserId;
+        new Thread(() -> {
+            while (true) {
+                try {
+                    String msg = chessChannel.take();
+                    if (!msg.equals(OthelloConstant.END_MESSAGE)) {
+                        group.sendMessage(msg);
+                    } else {
+                        lock.lock();
+                        chessChannelMap.remove(generateChessChannelKey(groupId, userId));
+                        chessChannelMap.remove(generateChessChannelKey(groupId, finalOtherUserId));
+                        playerMap.remove(chessChannelKey);
+                        playerMap.remove(generateChessChannelKey(groupId, finalOtherUserId));
+                        lock.unlock();
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    lock.lock();
+                    chessChannelMap.remove(generateChessChannelKey(groupId, userId));
+                    chessChannelMap.remove(generateChessChannelKey(groupId, finalOtherUserId));
+                    playerMap.remove(chessChannelKey);
+                    playerMap.remove(generateChessChannelKey(groupId, finalOtherUserId));
+                    lock.unlock();
+                    return;
+                }
+            }
+        }).start();
+        lock.unlock();
+        return OK;
     }
 
-    public OthelloBoard createChessBoard(String black, String white, String groupId) {
-        if (userBattleMap.containsKey(white) || userBattleMap.containsKey(black)) {
-            return null;
+    public int create(Long groupId, Long userId, String username) {
+        lock.lock();
+        usernameMap.put(userId, username);
+        if (chessChannelMap.get(generateChessChannelKey(groupId, userId)) != null) {
+            lock.unlock();
+            return YOU_IN_BOARD;
         }
-        OthelloBoard othelloBoard = OthelloBoard.instant();
-        othelloBoard.init(black, white);
-        othelloBoardGroup.put((black + ":" + white + ":" + groupId), othelloBoard);
-        userBattleMap.put(white, black);
-        userBattleMap.put(black, white);
-        return othelloBoard;
-    }
-
-    public boolean checkUser(String user) {
-        return !userBattleMap.containsKey(user);
-    }
-
-    public String operate(String user, String group, int x, int y) {
-        String userTwo = userBattleMap.get(user);
-        if (userTwo == null) {
-            return "你没有参加对局";
+        Map<Long, OthelloBoard> map = prepareMap.get(groupId);
+        if (map == null) {
+            HashMap<Long, OthelloBoard> m = new HashMap<>();
+            m.put(userId, OthelloBoard.instant());
+            prepareMap.put(groupId, m);
+            lock.unlock();
+            return OK;
         }
-        OthelloBoard othelloBoard = othelloBoardGroup.get(user + ":" + userTwo + ":" + group);
-        if (othelloBoard == null) {
-            othelloBoard = othelloBoardGroup.get(userTwo + ":" + user + ":" + group);
+        if (map.size() == 0) {
+            map.put(userId, OthelloBoard.instant());
+            lock.unlock();
+            return OK;
         }
-        if (othelloBoard == null) {
-            userBattleMap.remove(user);
-            userBattleMap.remove(userTwo);
-            return "没有此对局";
+        Long otherUserId = null;
+        for (Map.Entry<Long, OthelloBoard> entry : map.entrySet()) {
+            otherUserId = entry.getKey();
         }
-        if (!othelloBoard.checkAlive()) {
-            userBattleMap.remove(user);
-            userBattleMap.remove(userTwo);
-            othelloBoardGroup.remove(user + ":" + userTwo + ":" + group);
-            othelloBoardGroup.remove(userTwo + ":" + user + ":" + group);
-            return "当前对局已结束";
-        }
-        boolean isTurn = othelloBoard.isTurn(user);
-        if (!isTurn) {
-            return "不是你的回合";
-        }
-        int chess = othelloBoard.getChess(user);
-        // 代码里按下标从1开始
-        String flag = othelloBoard.operate(chess, x - 1, y - 1);
-        if (flag.equals(OthelloConstant.DISABLE)) {
-            return "这个地方不能落子";
+        lock.unlock();
+        if (otherUserId.equals(userId)) {
+            return YOU_CREATED_BOARD;
         } else {
-            othelloBoard.getOthelloBoard()[x - 1][y - 1] = chess;
-            return ChessConstant.SUCCESS;
+            return OTHERS_CREATED_BOARD;
         }
     }
 
-    public MessageChain toMessage(String user, String group) {
-        String userTwo = userBattleMap.get(user);
-        OthelloBoard othelloBoard = othelloBoardGroup.get(user + ":" + userTwo + ":" + group);
-        if (othelloBoard == null) {
-            othelloBoard = othelloBoardGroup.get(userTwo + ":" + user + ":" + group);
+    public int play(Long groupId, Long userId, int x, int y) {
+        ChessChannel chessChannel = chessChannelMap.get(generateChessChannelKey(groupId, userId));
+        if (chessChannel == null) {
+            return NOT_FOUND_BOARD;
         }
-        MessageChain messageChain = MessageUtils.newChain();
-        messageChain = messageChain.plus("当前对局情况为").plus("\n");
-        messageChain = othelloBoard.toMessage(messageChain);
-        int blankNum = othelloBoard.checkComplete();
-        if (blankNum == 0) {
-            String blackAndWhiteAndVictoryUser = othelloBoard.getBlackAndWhiteAndVictoryUser();
-            String[] strings = blackAndWhiteAndVictoryUser.split(":");
-            At at = new At(Long.parseLong(strings[2]));
-            int blackNum = Integer.parseInt(strings[0]);
-            int whiteNum = Integer.parseInt(strings[1]);
-            messageChain = messageChain.plus("本次对局结束").plus("\n");
-            messageChain = messageChain.plus("黑比白比分为:" + blackNum + ":" + whiteNum).plus("\n");
-            messageChain = messageChain.plus("当前的获胜者是").plus(at).plus("\n");
-            userBattleMap.remove(user);
-            userBattleMap.remove(userTwo);
-            othelloBoardGroup.remove(user + ":" + userTwo + ":" + group);
-            othelloBoardGroup.remove(userTwo + ":" + user + ":" + group);
+        chessChannel.add(new ChessOperation(OthelloConstant.OPERATE_MESSAGE, x - 1, 8 - y, userId + ""));
+        return OK;
+    }
+
+    public int give(Long groupId, Long userId) {
+        lock.lock();
+        ChessChannel chessChannel = chessChannelMap.get(generateChessChannelKey(groupId, userId));
+        if (chessChannel == null) {
+            lock.unlock();
+            return NOT_FOUND_BOARD;
         }
-        return messageChain;
+        chessChannel.add(new ChessOperation(OthelloConstant.ADMIT_DEFEAT_MESSAGE, 0, 0, userId + ""));
+        chessChannelMap.remove(generateChessChannelKey(groupId, userId));
+        String otherChannelKey = playerMap.remove(generateChessChannelKey(groupId, userId));
+        playerMap.remove(otherChannelKey);
+        chessChannelMap.remove(otherChannelKey);
+        lock.unlock();
+        return OK;
     }
 
-    public MessageChain end(String user, String group) {
-        String userTwo = userBattleMap.get(user);
-        OthelloBoard othelloBoard = othelloBoardGroup.get(user + ":" + userTwo + ":" + group);
-        if (othelloBoard == null) {
-            othelloBoard = othelloBoardGroup.get(userTwo + ":" + user + ":" + group);
+    public int remove(Long groupId) {
+        lock.lock();
+        Map<Long, OthelloBoard> map = prepareMap.get(groupId);
+        if (map == null || map.size() == 0) {
+            lock.unlock();
+            return NOT_FOUND_BOARD;
         }
-        MessageChain messageChain = MessageUtils.newChain();
-        String blackAndWhiteAndVictoryUser = othelloBoard.getBlackAndWhiteAndVictoryUser();
-        String[] strings = blackAndWhiteAndVictoryUser.split(":");
-        At at = new At(Long.parseLong(strings[2]));
-        int blackNum = Integer.parseInt(strings[0]);
-        int whiteNum = Integer.parseInt(strings[1]);
-        messageChain = messageChain.plus("当前双方都不可下，开始进行结算");
-        messageChain = messageChain.plus("本次对局结束").plus("\n");
-        messageChain = messageChain.plus("黑比白比分为:" + blackNum + ":" + whiteNum).plus("\n");
-        messageChain = messageChain.plus("当前的获胜者是").plus(at).plus("\n");
-        userBattleMap.remove(user);
-        userBattleMap.remove(userTwo);
-        othelloBoardGroup.remove(user + ":" + userTwo + ":" + group);
-        othelloBoardGroup.remove(userTwo + ":" + user + ":" + group);
-        return messageChain;
+        map.clear();
+        lock.unlock();
+        return OK;
     }
 
-    public String cancelBattle(String user, String group) {
-        String userTwo = userBattleMap.get(user);
-        if (userTwo == null) {
-            return null;
-        }
-        userBattleMap.remove(user);
-        userBattleMap.remove(userTwo);
-        othelloBoardGroup.remove(user + ":" + userTwo + ":" + group);
-        othelloBoardGroup.remove(userTwo + ":" + user + ":" + group);
-        return userTwo;
+    private String generateChessChannelKey(Long groupId, Long userId) {
+        return groupId + ":" + userId;
     }
-
-    public void changeStatus(OthelloBoard othelloBoard) {
-        othelloBoard.changeStatus();
-    }
-
-    public boolean checkStatus(OthelloBoard othelloBoard) {
-        String status = othelloBoard.checkStatus();
-        return status.equals(OthelloConstant.SUCCESS);
-    }
-
 }

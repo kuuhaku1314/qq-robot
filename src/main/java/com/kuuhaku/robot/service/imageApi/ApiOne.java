@@ -8,14 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 18:03
+ * @Author by kuuhaku
+ * @Date 2021/2/13 18:03
  * @Description 岁月小筑api
  */
 @Service
 @Slf4j
 @Primary
-public class ApiOne implements CommonImageApi{
+public class ApiOne implements CommonImageApi {
 
 
     @Override

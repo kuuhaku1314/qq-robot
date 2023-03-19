@@ -6,8 +6,8 @@ import com.kuuhaku.robot.core.chain.ChannelContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 2:53
+ * @Author by kuuhaku
+ * @Date 2021/2/13 2:53
  * @Description 打印日志
  */
 @HandlerComponent

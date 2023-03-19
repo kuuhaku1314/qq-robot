@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 18:02
+ * @Author by kuuhaku
+ * @Date 2021/2/13 18:02
  * @Description 图片api工厂
  */
 @Component
@@ -41,7 +40,8 @@ public class ImageApiFactory {
     @PostConstruct
     public void init() {
         list.add(apiOne);
-        list.add(apiFour);
+        list.add(apiTwo);
+        list.add(apiThree);
         size = list.size();
     }
 

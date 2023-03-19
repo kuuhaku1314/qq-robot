@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
  * @Description
  */
 @Slf4j
-public class ExecuteChannel implements Channel{
+public class ExecuteChannel implements Channel {
 
     private final String id;
 
@@ -42,6 +42,11 @@ public class ExecuteChannel implements Channel{
     @Override
     public int order() {
         return serviceMethod.getOrder();
+    }
+
+    @Override
+    public String description() {
+        return serviceMethod.getDescription();
     }
 
 }

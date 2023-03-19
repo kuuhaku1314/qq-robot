@@ -1,0 +1,11 @@
+logs
+cache
+.idea
+/deviceInfo.json
+/qq-robot.ipr
+/qq-robot.iws
+application.properties
+/qq-robot.iml
+/src/main/resources/dump/
+/src/main/resources/temp/
+/target/

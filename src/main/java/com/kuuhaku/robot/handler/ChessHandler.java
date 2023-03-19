@@ -3,12 +3,12 @@ package com.kuuhaku.robot.handler;
 import com.kuuhaku.robot.common.annotation.Handler;
 import com.kuuhaku.robot.common.annotation.HandlerComponent;
 import com.kuuhaku.robot.common.annotation.Permission;
+import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.core.chain.ChannelContext;
 import com.kuuhaku.robot.core.chain.Command;
 import com.kuuhaku.robot.entity.chess.ChessBoard;
 import com.kuuhaku.robot.entity.chess.ChessConstant;
 import com.kuuhaku.robot.entity.chess.ChessGroup;
-import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.service.ChessService;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.message.data.At;
@@ -18,13 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 2:03
+ * @Author by kuuhaku
+ * @Date 2021/2/12 2:03
  * @Description 井字棋
  */
 @HandlerComponent
@@ -35,7 +34,7 @@ public class ChessHandler {
     private ChessService chessService;
 
     @Permission
-    @Handler(values = {"创建井字棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"创建井字棋"}, types = {HandlerMatchType.COMPLETE}, description = "发送[创建井字棋]使用")
     public void createBattle(ChannelContext ctx) {
         MessageChain result = MessageUtils.newChain();
         ChessGroup chessGroup = chessGroupMap.get(ctx.groupIdStr());
@@ -63,13 +62,13 @@ public class ChessHandler {
             result = result.plus("操作指令: 棋名+空格+操作方式，如 [草莓 左上]。").plus("\n");
             result = result.plus("红方开始，依次进行，60回合或30分钟则流局，达成三个棋子摆成一条斜线则胜利。").plus("\n");
             result = result.plus("发送[井字棋认输]可以结束已开始对局").plus("\n");
-            result = result.plus("发送[停止井字棋]可以停止创建").plus("\n");
+            result = result.plus("发送[取消井字棋]可以停止创建").plus("\n");
         }
         ctx.group().sendMessage(result);
     }
 
     @Permission
-    @Handler(values = {"加入井字棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"加入井字棋"}, types = {HandlerMatchType.COMPLETE}, description = "发送[加入井字棋]使用")
     public void joinBattle(ChannelContext ctx) {
         String user = ctx.senderIdStr();
         String group = ctx.groupIdStr();
@@ -109,9 +108,9 @@ public class ChessHandler {
     }
 
     @Permission
-    @Handler(values = {"苹果","西瓜","草莓","星星","月亮","太阳"}, types = {HandlerMatchType.START,
-            HandlerMatchType.START,HandlerMatchType.START,HandlerMatchType.START,
-            HandlerMatchType.START,HandlerMatchType.START,})
+    @Handler(values = {"苹果", "西瓜", "草莓", "星星", "月亮", "太阳"}, types = {HandlerMatchType.START,
+            HandlerMatchType.START, HandlerMatchType.START, HandlerMatchType.START,
+            HandlerMatchType.START, HandlerMatchType.START,}, description = "井字棋中使用，如[苹果 上] [苹果 右下]")
     public void battle(ChannelContext ctx) {
         MessageChain result = MessageUtils.newChain();
         Command command = ctx.command();
@@ -129,7 +128,7 @@ public class ChessHandler {
     }
 
     @Permission
-    @Handler(values = {"井字棋认输"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"井字棋认输"}, types = {HandlerMatchType.COMPLETE}, description = "井字棋认输时候使用")
     public void give(ChannelContext ctx) {
         MessageChain result = MessageUtils.newChain();
         String userTwo = chessService.cancelBattle(ctx.senderIdStr(), ctx.groupIdStr());
@@ -144,7 +143,7 @@ public class ChessHandler {
     }
 
     @Permission
-    @Handler(values = {"取消井字棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"取消井字棋"}, types = {HandlerMatchType.COMPLETE}, description = "创建了对局无人应战时候使用")
     public void stop(ChannelContext ctx) {
         MessageChain result = MessageUtils.newChain();
         ChessGroup chessGroup = chessGroupMap.get(ctx.groupIdStr());

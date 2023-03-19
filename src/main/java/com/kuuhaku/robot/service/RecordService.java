@@ -3,10 +3,12 @@ package com.kuuhaku.robot.service;
 import com.kuuhaku.robot.core.service.DownloadService;
 import com.kuuhaku.robot.core.service.VoiceService;
 import lombok.extern.slf4j.Slf4j;
+import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.event.events.MessageRecallEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
+import net.mamoe.mirai.message.data.Audio;
 import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.Voice;
+import net.mamoe.mirai.message.data.OnlineAudio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,8 +19,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 21:45
+ * @Author by kuuhaku
+ * @Date 2021/2/12 21:45
  * @Description 信息保存
  */
 @Slf4j
@@ -43,17 +45,20 @@ public class RecordService {
     @Autowired
     private VoiceService voiceService;
 
-    public void record(String groupId, MessageChain messageChain) {
-        String messageIds = getMessageIds(messageChain);
+    public void record(String groupId, MessageEvent event) {
+        MessageChain messageChain = event.getMessage();
+        StringBuilder messageIds = new StringBuilder();
+        for (int id : event.getSource().getIds()) {
+            messageIds.append(id);
+        }
         if (map.size() > MAX_SIZE) {
             map = new HashMap<>(1000);
         }
-        Voice voice = messageChain.get(Voice.Key);
-        if (voice != null) {
-            log.info("开始进行语音下载");
-            String url = voice.getUrl();
+        OnlineAudio onlineAudio = messageChain.get(OnlineAudio.Key);
+        if (onlineAudio != null) {
+            String url = onlineAudio.getUrlForDownload();
             log.info("下载url为" + url);
-            downloadService.download(url, getVoiceRealPath(groupId, messageIds));
+            downloadService.download(url, getLocalVoiceRealPath(groupId, messageIds.toString()));
             map.put(groupId + ":" + messageIds, VOICE_KEY);
             return;
         }
@@ -63,6 +68,7 @@ public class RecordService {
 
     /**
      * 获取消息的id
+     *
      * @param messageChain 消息
      * @return id
      */
@@ -82,7 +88,8 @@ public class RecordService {
 
     /**
      * 撤回专用，针对语音做了处理
-     * @param event 撤回事件
+     *
+     * @param event      撤回事件
      * @param messageIds 撤回的消息id
      * @return 消息
      */
@@ -94,11 +101,11 @@ public class RecordService {
             log.info("message内容为[{}]", message);
             if (message.equals(VOICE_KEY)) {
                 // 语音文件路径
-                Voice voice = voiceService.uploadVoice(getVoiceRealPath(groupId, messageIds), event.getGroup());
-                if (voice == null) {
+                Audio audio = voiceService.uploadAudio(getLocalVoiceRealPath(groupId, messageIds), event.getGroup());
+                if (audio == null) {
                     return null;
                 }
-                return voiceService.parseMsgChainByVoice(voice);
+                return voiceService.parseMsgChainByAudio(audio);
             }
             return MiraiCode.deserializeMiraiCode(message);
         }
@@ -108,11 +115,12 @@ public class RecordService {
 
     /**
      * 获取保存的语音路径
-     * @param groupId 群id
+     *
+     * @param groupId    群id
      * @param messageIds 消息id
      * @return
      */
-    private String getVoiceRealPath(String groupId, String messageIds) {
+    private String getLocalVoiceRealPath(String groupId, String messageIds) {
         return voicePath + File.separator + groupId + "_" + messageIds + ".amr";
     }
 }

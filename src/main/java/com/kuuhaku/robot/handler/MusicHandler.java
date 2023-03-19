@@ -6,25 +6,24 @@ import com.kuuhaku.robot.common.annotation.Permission;
 import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.core.chain.ChannelContext;
 import com.kuuhaku.robot.core.chain.Command;
-import com.kuuhaku.robot.entity.music.NetEaseMusic;
 import com.kuuhaku.robot.core.service.DownloadService;
 import com.kuuhaku.robot.core.service.ImageService;
-import com.kuuhaku.robot.service.MusicService;
 import com.kuuhaku.robot.core.service.VoiceService;
+import com.kuuhaku.robot.entity.music.NetEaseMusic;
+import com.kuuhaku.robot.service.MusicService;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.message.data.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 21:56
+ * @Author by kuuhaku
+ * @Date 2021/2/13 21:56
  * @Description 点歌
  */
 @HandlerComponent
@@ -42,7 +41,7 @@ public class MusicHandler {
     private final Map<String, List<NetEaseMusic>> map = new ConcurrentHashMap<>();
 
     @Permission
-    @Handler(values = {"点歌"}, types = {HandlerMatchType.START})
+    @Handler(values = {"点歌"}, types = {HandlerMatchType.START}, description = "格式如[点歌 那朵花]，回复[选择分享 序号]或[选择语音 序号]点歌")
     public void selectMusic(ChannelContext ctx) {
         // 获取歌名并检验
         Command command = ctx.command();
@@ -76,15 +75,12 @@ public class MusicHandler {
             String musicListImagePath = musicService.getMusicListImagePath(musicList);
             if (musicListImagePath == null) {
                 result = result.plus("点歌好像出了点问题");
-                log.info("文字转图片失败");
                 ctx.group().sendMessage(result);
             } else {
-                log.info("开始上传音乐图片");
                 Image image = imageService.uploadImage(musicListImagePath, ctx.event());
                 MessageChain img = imageService.parseMsgChainByImg(image);
-                ctx.group().sendMessage(result);
+                ctx.group().sendMessage(result.plus("发送[选择分享 序号]或[选择语音 序号]点歌"));
                 ctx.group().sendMessage(img);
-                log.info("音乐图片消息发布成功");
                 // 删除临时文件
                 downloadService.deleteFile(musicListImagePath);
             }
@@ -92,7 +88,7 @@ public class MusicHandler {
     }
 
     @Permission
-    @Handler(values = {"我要点歌"}, types = {HandlerMatchType.START})
+    @Handler(values = {"选择分享"}, types = {HandlerMatchType.START}, description = "在点歌后发送[选择分享 1]，选择序号，会分享歌曲")
     public void shareMusicCard(ChannelContext ctx) {
         Command command = ctx.command();
         if (command.paramSize() != 1 || !StringUtils.isNumeric(command.params().get(0))) {
@@ -117,7 +113,7 @@ public class MusicHandler {
     }
 
     @Permission
-    @Handler(values = {"语音点歌"}, types = {HandlerMatchType.START})
+    @Handler(values = {"选择语音"}, types = {HandlerMatchType.START}, description = "在点歌后发送[选择语音 1]，选择序号，会发送语音")
     public void shareMusicVoice(ChannelContext ctx) {
         Command command = ctx.command();
         if (command.paramSize() != 1 || !StringUtils.isNumeric(command.params().get(0))) {
@@ -147,8 +143,8 @@ public class MusicHandler {
             return;
         }
         // 歌曲上传为语音
-        Voice voice = voiceService.uploadVoice(musicPath, (Group) ctx.group());
-        MessageChain voiceMessage = voiceService.parseMsgChainByVoice(voice);
+        Audio audio = voiceService.uploadAudio(musicPath, (Group) ctx.group());
+        MessageChain voiceMessage = voiceService.parseMsgChainByAudio(audio);
         // 下载歌曲封面并上传
         String picturePath = downloadService.getRandomPngPath();
         downloadService.download(easeMusic.getPicUrl(), picturePath);
@@ -165,7 +161,7 @@ public class MusicHandler {
     }
 
     @Permission
-    @Handler(values = {"取消点歌"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"取消点歌"}, types = {HandlerMatchType.COMPLETE}, description = "点歌后取消点歌")
     public void cancelMusic(ChannelContext ctx) {
         List<NetEaseMusic> easeMusics = map.remove(ctx.groupIdStr());
         if (easeMusics != null) {

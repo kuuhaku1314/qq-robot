@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  * @Description
  */
 @Slf4j
-public class CommandChannel implements Channel{
+public class CommandChannel implements Channel {
 
     private final String id;
 
@@ -47,6 +47,11 @@ public class CommandChannel implements Channel{
         return serviceMethod.getOrder();
     }
 
+    @Override
+    public String description() {
+        return serviceMethod.getDescription();
+    }
+
     public int type() {
         return type;
     }
@@ -67,7 +72,8 @@ public class CommandChannel implements Channel{
                 return msg.equals(id);
             case HandlerMatchType.END:
                 return msg.endsWith(id);
-            default: return false;
+            default:
+                return false;
         }
     }
 }

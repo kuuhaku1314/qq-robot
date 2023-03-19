@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 2:50
+ * @Author by kuuhaku
+ * @Date 2021/2/13 2:50
  * @Description 保存消息
  */
 @HandlerComponent
@@ -20,6 +20,7 @@ public class RecordHandler {
 
     @Handler(order = -100)
     public void toRecord(ChannelContext ctx) {
-        recordService.record(ctx.groupIdStr(), ctx.event().getMessage());
+        ctx.event().getSource().getIds();
+        recordService.record(ctx.groupIdStr(), ctx.event());
     }
 }

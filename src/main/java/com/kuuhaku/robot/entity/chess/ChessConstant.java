@@ -1,8 +1,8 @@
 package com.kuuhaku.robot.entity.chess;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/11 7:28
+ * @Author by kuuhaku
+ * @Date 2021/2/11 7:28
  * @Description 一些常量
  */
 public class ChessConstant {

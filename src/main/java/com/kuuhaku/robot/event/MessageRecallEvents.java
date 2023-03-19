@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 20:58
+ * @Author by kuuhaku
+ * @Date 2021/2/12 20:58
  * @Description 消息撤回事件
  */
 @Component

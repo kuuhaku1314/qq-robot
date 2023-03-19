@@ -57,7 +57,7 @@ public class HttpsUtil {
      * post请求方法列表
      */
     public static byte[] doPost(String uri, String data) throws IOException {
-        return doPost(uri,data,null);
+        return doPost(uri, data, null);
     }
 
     /**
@@ -168,8 +168,7 @@ public class HttpsUtil {
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        SSLSocketFactory ssf = ctx.getSocketFactory();
-        return ssf;
+        return ctx.getSocketFactory();
     }
 
     //添加请求头
@@ -225,5 +224,4 @@ public class HttpsUtil {
         }
 
     }
-
 }

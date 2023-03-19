@@ -14,10 +14,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/15 16:58
+ * @Author by kuuhaku
+ * @Date 2021/2/15 16:58
  * @Description 排除指定group列表，不触发messageEvent事件
  */
 @Aspect
@@ -31,49 +32,10 @@ public class ExclusionAspect {
 
 
     @Around("@within(handlerComponent)")
-    public Object around(ProceedingJoinPoint pjp, HandlerComponent handlerComponent){
+    public Object around(ProceedingJoinPoint pjp, HandlerComponent handlerComponent) {
         Object[] args = pjp.getArgs();
-        if (args.length == 1) {
-            if (args[0] instanceof ChannelContext) {
-                ChannelContext context = (ChannelContext) args[0];
-                MessageEvent event = context.event();
-                if (!permissionService.masterContains(event.getSender().getId())) {
-                    if (permissionService.exclusionGroupContains(event.getSubject().getId()) ||
-                            ((Group) event.getSubject()).getBotAsMember().isMuted()) {
-                        return Void.TYPE;
-                    }
-                }
-            } else if (args[0] instanceof MemberJoinEvent) {
-                MemberJoinEvent event = (MemberJoinEvent) args[0];
-                if (permissionService.exclusionGroupContains(event.getGroup().getId()) ||
-                        (event.getGroup()).getBotAsMember().isMuted()) {
-                    return Void.TYPE;
-                }
-            } else if (args[0] instanceof MemberJoinRequestEvent) {
-                MemberJoinRequestEvent event = (MemberJoinRequestEvent) args[0];
-                if (permissionService.exclusionGroupContains(Objects.requireNonNull(event.getGroup()).getId()) ||
-                        (Objects.requireNonNull(event.getGroup())).getBotAsMember().isMuted()) {
-                    return Void.TYPE;
-                }
-            } else if (args[0] instanceof MemberLeaveEvent) {
-                MemberLeaveEvent event = (MemberLeaveEvent) args[0];
-                if (permissionService.exclusionGroupContains(event.getGroup().getId()) ||
-                        (event.getGroup()).getBotMuteRemaining() > 0) {
-                    return Void.TYPE;
-                }
-            } else if (args[0] instanceof MessageRecallEvent.GroupRecall) {
-                MessageRecallEvent.GroupRecall event = (MessageRecallEvent.GroupRecall) args[0];
-                if (permissionService.exclusionGroupContains(event.getGroup().getId()) ||
-                        (event.getGroup()).getBotAsMember().isMuted()) {
-                    return Void.TYPE;
-                }
-            } else if (args[0] instanceof NudgeEvent) {
-                NudgeEvent event = (NudgeEvent) args[0];
-                if (permissionService.exclusionGroupContains(event.getSubject().getId()) ||
-                        ((Group) event.getSubject()).getBotAsMember().isMuted()) {
-                    return Void.TYPE;
-                }
-            }
+        if (!enableExecute(args)) {
+            return Void.TYPE;
         }
         try {
             return pjp.proceed();
@@ -81,5 +43,47 @@ public class ExclusionAspect {
             log.info("切面发生异常", e);
             return Void.TYPE;
         }
+    }
+
+    private boolean enableExecute(Object[] args) {
+        if (args.length != 1) {
+            return false;
+        }
+        var isMuted = false;
+        var senderID = 0L;
+        var groupID = 0L;
+        if (args[0] instanceof ChannelContext context) {
+            MessageEvent event = context.event();
+            if (!permissionService.masterContains(event.getSender().getId())) {
+                isMuted = ((Group) event.getSubject()).getBotAsMember().isMuted();
+                senderID = event.getSender().getId();
+                groupID = event.getSubject().getId();
+
+            }
+        } else if (args[0] instanceof MemberJoinEvent event) {
+            isMuted = event.getGroup().getBotAsMember().isMuted();
+            senderID = event.getUser().getId();
+            groupID = event.getGroup().getId();
+        } else if (args[0] instanceof MemberJoinRequestEvent event) {
+            isMuted = Objects.requireNonNull(event.getGroup()).getBotAsMember().isMuted();
+            senderID = Optional.ofNullable(event.getInvitorId()).orElse(0L);
+            groupID = event.getGroup().getId();
+        } else if (args[0] instanceof MemberLeaveEvent event) {
+            isMuted = event.getGroup().getBotAsMember().isMuted();
+            senderID = event.getUser().getId();
+            groupID = event.getGroup().getId();
+        } else if (args[0] instanceof MessageRecallEvent.GroupRecall event) {
+            isMuted = event.getGroup().getBotAsMember().isMuted();
+            senderID = event.getAuthorId();
+            groupID = event.getGroup().getId();
+        } else if (args[0] instanceof NudgeEvent event) {
+            isMuted = ((Group) event.getSubject()).getBotAsMember().isMuted();
+            senderID = event.getFrom().getId();
+            groupID = event.getSubject().getId();
+        }
+        if (permissionService.masterContains(senderID)) {
+            return true;
+        }
+        return !isMuted && !permissionService.exclusionGroupContains(groupID);
     }
 }

@@ -1,8 +1,8 @@
 package com.kuuhaku.robot.common.constant;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 1:33
+ * @Author by kuuhaku
+ * @Date 2021/2/12 1:33
  * @Description 关键字匹配类型
  */
 public class HandlerMatchType {
