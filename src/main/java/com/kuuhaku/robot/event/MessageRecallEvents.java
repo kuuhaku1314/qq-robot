@@ -30,6 +30,7 @@ public class MessageRecallEvents extends SimpleListenerHost {
     @NotNull
     @EventHandler
     public ListeningStatus onMessage(@NotNull MessageRecallEvent.GroupRecall event) throws Exception {
+        // 防撤回方法
         // recallHandler.doHandler(event);
         return ListeningStatus.LISTENING;
     }

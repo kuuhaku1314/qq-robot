@@ -18,6 +18,7 @@ public class RecordHandler {
     @Autowired
     private RecordService recordService;
 
+    // 记录群消息，配合防撤回使用
     @Handler(order = -100)
     public void toRecord(ChannelContext ctx) {
         ctx.event().getSource().getIds();

@@ -5,6 +5,7 @@ import com.kuuhaku.robot.common.annotation.HandlerComponent;
 import com.kuuhaku.robot.common.annotation.Permission;
 import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.common.constant.PermissionRank;
+import com.kuuhaku.robot.config.ProxyConfig;
 import com.kuuhaku.robot.core.chain.ChannelContext;
 import com.kuuhaku.robot.core.service.DownloadService;
 import com.kuuhaku.robot.entity.Quiz;
@@ -33,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,33 +61,40 @@ public class RepeatHandler {
     private AudioService audioService;
     @Autowired
     private PetPetHandler petPetHandler;
+    @Autowired
+    private ProxyConfig proxyConfig;
     @Value("${robot.openai.host}")
     public String openAIHost;
     @Value("${robot.openai.api.key}")
     public String openAIApiKey;
     private OpenAiClient openAiClient;
-    private static boolean sendGIF = false;
+    private static boolean sendGIF = true;
     private static final ReentrantLock chatLock = new ReentrantLock();
     private static final ConcurrentHashMap<String, ImmutablePair<ReentrantLock, List<Message>>> messagesMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
-        openAiClient = OpenAiClient.builder()
+        OpenAiClient.Builder builder = OpenAiClient.builder()
                 .apiKey(openAIApiKey)
                 .connectTimeout(50)
                 .writeTimeout(50)
                 .readTimeout(50)
-                //.proxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("127.0.0.1", 20081)))
-                //.apiHost("https://api.openai.com/")
-                .apiHost(openAIHost)
-                .build();
+                .apiHost(openAIHost);
+        if (proxyConfig.getProtocol() != null) {
+            builder.proxy(new Proxy(proxyConfig.getProtocol(), new InetSocketAddress(proxyConfig.getHost(), proxyConfig.getPort())));
+        }
+        openAiClient = builder.build();
     }
 
+
+    // 复读QQ群消息
     @Handler(order = -10)
     public void repeat(ChannelContext ctx) {
         repeatService.tryRepeat(ctx.event());
     }
 
+
+    // 记录QQ群图片的地址
     @Handler(order = -9)
     public void printImageUrl(ChannelContext ctx) {
         FlashImage flashImage = ctx.event().getMessage().get(FlashImage.Key);
@@ -103,6 +113,7 @@ public class RepeatHandler {
         }
     }
 
+    // 反转gif图片
     @Handler(order = -5)
     public void reverseGIF(ChannelContext ctx) {
         if (!sendGIF) {
@@ -146,17 +157,21 @@ public class RepeatHandler {
         }
     }
 
+    // ChatGPT聊天功能，如果在消息最后加上doc则会回复文本否则转语音
     @Permission
     @Handler(values = {"@${robot.account}"}, types = {HandlerMatchType.START}, description = "人工智障在线聊天，格式如[@机器人 你好]")
     public void reply(ChannelContext ctx) {
         if (ctx.command().isEmpty()) {
             return;
         }
-        String msg = ctx.command().getMsg().substring(12);
+
+        // 去除@xxxxx，获取真实消息
+        String pre = "@" + ctx.event().getBot().getId() + " ";
+        String msg = ctx.command().getMsg().substring(pre.length());
         if (msg.equals("")) {
             return;
         }
-        // 特殊处理某些场景
+        // 特殊处理@机器人发表情包某些场景
         if (msg.equals("搓")) {
             petPetHandler.toPetPet(ctx);
             return;
@@ -173,6 +188,7 @@ public class RepeatHandler {
             petPetHandler.toDiu(ctx);
             return;
         }
+
         log.info("start invoke chat gpt api");
         boolean useDoc = false;
         msg = msg.trim();
@@ -233,11 +249,12 @@ public class RepeatHandler {
     }
 
     @Permission
-    @Handler(values = {"清理上下文"}, types = {HandlerMatchType.COMPLETE}, description = "清理上下文")
+    @Handler(values = {"清理上下文"}, types = {HandlerMatchType.COMPLETE}, description = "清理chatGPT当前会话的上下文")
     public void clean(ChannelContext ctx) {
         chatLock.lock();
         ImmutablePair<ReentrantLock, List<Message>> pair = messagesMap.get(ctx.groupIdStr());
         if (pair == null) {
+            ctx.group().sendMessage("当前上下文为空");
             return;
         }
         chatLock.unlock();
@@ -246,6 +263,7 @@ public class RepeatHandler {
         pair.getLeft().unlock();
         ctx.group().sendMessage("ok");
     }
+
 
     @Handler(values = {"出题"}, types = {HandlerMatchType.COMPLETE}, description = "bilibili入站题，没答案")
     public void quiz(ChannelContext ctx) {
@@ -261,6 +279,7 @@ public class RepeatHandler {
     }
 
 
+    // 加速git图片
     @Permission(level = PermissionRank.MEMBER)
     @Handler(values = {"gif加速"}, types = {HandlerMatchType.CONTAINS}, description = "2倍加速gif")
     public void fastGIFFalse(ChannelContext ctx) {

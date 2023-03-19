@@ -13,5 +13,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Permission {
+    /**
+     * 指令方法需要的权限级别
+     *
+     * @return 权限枚举
+     */
     int level() default 0;
 }

@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MuteHandler {
     private final Map<String, Set<String>> map = new ConcurrentHashMap<>();
 
+
+    // 设置了禁言关键词后由这个方法进行禁言
     @Handler(order = -100)
     public void toMute(ChannelContext ctx) {
         MessageEvent event = ctx.event();

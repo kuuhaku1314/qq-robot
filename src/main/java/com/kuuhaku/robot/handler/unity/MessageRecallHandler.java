@@ -33,6 +33,7 @@ public class MessageRecallHandler {
     @Autowired
     private TimeTaskService timeTaskService;
 
+
     public void doHandler(MessageRecallEvent.GroupRecall event) {
         long authorId = event.getAuthorId();
         At authorAt = new At(authorId);

@@ -412,6 +412,8 @@ public class SendImageHandler {
         });
     }
 
+
+    // 人生重开游戏
     @Permission
     @Handler(values = {"人生重开"}, types = {HandlerMatchType.COMPLETE}, description = "人生重开小游戏")
     public void restartLife(ChannelContext ctx) {

@@ -121,7 +121,7 @@ public class PermissionHandler {
         }
     }
 
-    @Handler(values = {"help", "帮助"}, types = {HandlerMatchType.COMPLETE, HandlerMatchType.COMPLETE}, description = "给予你帮助")
+    @Handler(values = {"帮助"}, types = {HandlerMatchType.COMPLETE, HandlerMatchType.COMPLETE}, description = "给予你帮助")
     public void commandList(ChannelContext ctx) {
         Map<String, String> map = commandService.commandMap();
         StringBuilder result = new StringBuilder();

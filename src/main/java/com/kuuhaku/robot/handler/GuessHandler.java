@@ -19,6 +19,8 @@ public class GuessHandler {
     @Autowired
     private GuessService guessService;
 
+
+    // 灯神猜人物
     @Permission
     @Handler(values = {"灯神"}, types = {HandlerMatchType.COMPLETE}, description = "猜东西")
     public void guessGame(ChannelContext ctx) {

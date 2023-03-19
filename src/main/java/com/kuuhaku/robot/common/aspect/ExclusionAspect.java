@@ -45,6 +45,7 @@ public class ExclusionAspect {
         }
     }
 
+    // 用于权限控制，某人是否被禁止使用，某群是否可以执行指令
     private boolean enableExecute(Object[] args) {
         if (args.length != 1) {
             return false;

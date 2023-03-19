@@ -27,6 +27,8 @@ import java.util.List;
 @Slf4j
 public class ForwardHandler {
 
+
+    // 转发假消息冒充别人
     @Permission()
     @Handler(values = {"假消息"}, types = {HandlerMatchType.START},
             description = "格式如同[假消息 @123456 这是假消息哦 @10086 我知道],@后是发送消息的人，之后是消息内容。中间用空格隔开")

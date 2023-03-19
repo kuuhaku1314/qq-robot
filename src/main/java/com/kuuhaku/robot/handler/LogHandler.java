@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LogHandler {
 
+
+    // 打印日志
     @Handler(order = Integer.MIN_VALUE)
     public void toRecord(ChannelContext ctx) {
         String message = ctx.event().getMessage().contentToString();

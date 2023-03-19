@@ -33,6 +33,7 @@ public class PermissionAspect {
     private PermissionService permissionService;
 
 
+    // 用于权限控制，某人是否有权限执行指令
     @Around("@annotation(permission)")
     public Object check(ProceedingJoinPoint pjp, Permission permission) {
         int level = permission.level();
