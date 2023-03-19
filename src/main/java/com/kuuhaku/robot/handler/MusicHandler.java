@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @HandlerComponent
 @Slf4j
 public class MusicHandler {
+    private final Map<String, List<NetEaseMusic>> map = new ConcurrentHashMap<>();
     @Autowired
     private MusicService musicService;
     @Autowired
@@ -37,8 +38,6 @@ public class MusicHandler {
     private DownloadService downloadService;
     @Autowired
     private ImageService imageService;
-
-    private final Map<String, List<NetEaseMusic>> map = new ConcurrentHashMap<>();
 
     @Permission
     @Handler(values = {"点歌"}, types = {HandlerMatchType.START}, description = "格式如[点歌 那朵花]，回复[选择分享 序号]或[选择语音 序号]点歌")

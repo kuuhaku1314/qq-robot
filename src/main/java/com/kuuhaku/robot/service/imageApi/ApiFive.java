@@ -20,6 +20,11 @@ import java.util.Set;
 @Service
 @Primary
 public class ApiFive implements CommonImageApi {
+    public static void main(String[] args) {
+        ApiFive apiFive = new ApiFive();
+        apiFive.getDownloadUri();
+    }
+
     @Override
     public String getDownloadUri() {
         try {
@@ -39,10 +44,5 @@ public class ApiFive implements CommonImageApi {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public static void main(String[] args) {
-        ApiFive apiFive = new ApiFive();
-        apiFive.getDownloadUri();
     }
 }

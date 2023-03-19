@@ -23,9 +23,9 @@ import java.util.Map;
 @Service
 @Slf4j
 public class QuizService {
+    List<Quiz> quizList = new ArrayList<>();
     @Value("${robot.quiz.path}")
     private String quizPath;
-    List<Quiz> quizList = new ArrayList<>();
 
     @PostConstruct
     void init() {

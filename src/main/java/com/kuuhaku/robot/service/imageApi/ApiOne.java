@@ -18,6 +18,11 @@ import org.springframework.stereotype.Service;
 public class ApiOne implements CommonImageApi {
 
 
+    public static void main(String[] args) {
+        ApiOne apiOne = new ApiOne();
+        apiOne.getDownloadUri();
+    }
+
     @Override
     public String getDownloadUri() {
         try {
@@ -35,10 +40,5 @@ public class ApiOne implements CommonImageApi {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public static void main(String[] args) {
-        ApiOne apiOne = new ApiOne();
-        apiOne.getDownloadUri();
     }
 }

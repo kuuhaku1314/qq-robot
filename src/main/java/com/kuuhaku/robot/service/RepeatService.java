@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 public class RepeatService {
-    private final Map<Long, String> map = new ConcurrentHashMap<>();
     /**
      * 排除那些词不进行复读
      */
@@ -49,6 +48,8 @@ public class RepeatService {
         KEYWORDS.add("p");
         KEYWORDS.add("pn");
     }
+
+    private final Map<Long, String> map = new ConcurrentHashMap<>();
 
     public void tryRepeat(MessageEvent event) {
         String content = event.getMessage().contentToString();

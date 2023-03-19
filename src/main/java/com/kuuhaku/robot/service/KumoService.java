@@ -37,6 +37,11 @@ public class KumoService {
     @Autowired
     private DownloadService downloadService;
 
+    public static void main(String[] args) {
+        KumoService kumoService = new KumoService();
+        kumoService.parseLog();
+    }
+
     public String getKumoPath(String id) {
         FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer();
         frequencyAnalyzer.setWordFrequenciesToReturn(150);
@@ -140,11 +145,6 @@ public class KumoService {
             e.printStackTrace();
         }
 
-    }
-
-    public static void main(String[] args) {
-        KumoService kumoService = new KumoService();
-        kumoService.parseLog();
     }
 
 }

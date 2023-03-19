@@ -19,20 +19,16 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 public class OthelloService {
 
-    private final Map<Long, Map<Long, OthelloBoard>> prepareMap = new HashMap<>();
-
-    private final Map<String, ChessChannel> chessChannelMap = new HashMap<>();
-    private final Map<String, String> playerMap = new HashMap<>();
-
-    private final ReentrantLock lock = new ReentrantLock();
-
-    private final Map<Long, String> usernameMap = new HashMap<>();
-
     public final static int OK = 0;
     public final static int NOT_FOUND_BOARD = 1;
     public final static int YOU_CREATED_BOARD = 2;
     public final static int YOU_IN_BOARD = 3;
     public final static int OTHERS_CREATED_BOARD = 4;
+    private final Map<Long, Map<Long, OthelloBoard>> prepareMap = new HashMap<>();
+    private final Map<String, ChessChannel> chessChannelMap = new HashMap<>();
+    private final Map<String, String> playerMap = new HashMap<>();
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Map<Long, String> usernameMap = new HashMap<>();
 
     public int join(Long groupId, Long userId, String username, Contact group, boolean hasAI) {
         lock.lock();

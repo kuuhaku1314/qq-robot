@@ -16,6 +16,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Primary
 public class ApiThree implements CommonImageApi {
+    public static void main(String[] args) {
+        ApiThree apiThree = new ApiThree();
+        apiThree.getDownloadUri();
+    }
+
     @Override
     public String getDownloadUri() {
         try {
@@ -33,10 +38,5 @@ public class ApiThree implements CommonImageApi {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public static void main(String[] args) {
-        ApiThree apiThree = new ApiThree();
-        apiThree.getDownloadUri();
     }
 }

@@ -5,10 +5,7 @@ import com.kuuhaku.robot.common.annotation.HandlerComponent;
 import com.kuuhaku.robot.common.annotation.Permission;
 import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.core.chain.ChannelContext;
-import com.kuuhaku.robot.core.service.DownloadService;
-import com.kuuhaku.robot.core.service.VoiceService;
 import com.kuuhaku.robot.service.AudioService;
-import com.kuuhaku.robot.service.MusicService;
 import net.mamoe.mirai.message.data.MessageChain;
 import org.springframework.beans.factory.annotation.Autowired;
 

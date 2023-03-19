@@ -13,19 +13,17 @@ import java.util.Set;
  */
 @Slf4j
 public class ChessBoard {
+    private final static int MAX_TURNS = 60;
+    private final static long MAX_ALIVE_TIME = 1000 * 60 * 30;
     private final int length = 3;
-
     private final Chess[][] chessBoard = new Chess[length][length];
+    private final Set<Chess> redSet = new HashSet<>(5);
+    private final Set<Chess> blackSet = new HashSet<>(5);
     private String black;
     private String red;
     private String flag;
     private int turn;
-    private final static int MAX_TURNS = 60;
     private long createTime;
-    private final static long MAX_ALIVE_TIME = 1000 * 60 * 30;
-
-    private final Set<Chess> redSet = new HashSet<>(5);
-    private final Set<Chess> blackSet = new HashSet<>(5);
 
     private ChessBoard() {
     }
@@ -255,11 +253,7 @@ public class ChessBoard {
      * @return 真即为到达
      */
     public boolean checkEnableDo() {
-        if (turn > MAX_TURNS) {
-            return false;
-        } else {
-            return true;
-        }
+        return turn <= MAX_TURNS;
     }
 
     /**
@@ -321,11 +315,7 @@ public class ChessBoard {
      * @return 真即为到达
      */
     public boolean checkAlive() {
-        if (System.currentTimeMillis() - createTime > MAX_ALIVE_TIME) {
-            return false;
-        } else {
-            return true;
-        }
+        return System.currentTimeMillis() - createTime <= MAX_ALIVE_TIME;
     }
 
     /**

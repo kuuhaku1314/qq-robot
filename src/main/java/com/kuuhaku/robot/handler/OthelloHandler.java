@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @HandlerComponent
 @Slf4j
 public class OthelloHandler {
+    private final AtomicLong AIId = new AtomicLong(1);
     @Autowired
     private OthelloService othelloService;
-    private final AtomicLong AIId = new AtomicLong(1);
 
     @Permission
     @Handler(values = {"创建黑白棋"}, types = {HandlerMatchType.COMPLETE}, description = "创建黑白棋局")

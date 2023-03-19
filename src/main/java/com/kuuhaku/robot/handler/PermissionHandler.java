@@ -5,7 +5,6 @@ import com.kuuhaku.robot.common.annotation.HandlerComponent;
 import com.kuuhaku.robot.common.annotation.Permission;
 import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.common.constant.PermissionRank;
-import com.kuuhaku.robot.config.Robot;
 import com.kuuhaku.robot.core.chain.ChannelContext;
 import com.kuuhaku.robot.core.service.CommandService;
 import com.kuuhaku.robot.core.service.PermissionService;
@@ -121,7 +120,7 @@ public class PermissionHandler {
         }
     }
 
-    @Handler(values = {"帮助"}, types = {HandlerMatchType.COMPLETE, HandlerMatchType.COMPLETE}, description = "给予你帮助")
+    @Handler(values = {"帮助"}, types = {HandlerMatchType.COMPLETE}, description = "给予你帮助")
     public void commandList(ChannelContext ctx) {
         Map<String, String> map = commandService.commandMap();
         StringBuilder result = new StringBuilder();

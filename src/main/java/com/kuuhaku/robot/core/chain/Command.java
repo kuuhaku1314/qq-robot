@@ -18,13 +18,9 @@ import java.util.stream.Collectors;
 public class Command implements ICommand {
 
     public static final String SEPARATOR = " ";
-
-    private String baseCommand;
-
     private final String msg;
-
     private final List<String> params = new ArrayList<>();
-
+    private String baseCommand;
     private Command reverseCommand = null;
 
     public Command(String msg) {
