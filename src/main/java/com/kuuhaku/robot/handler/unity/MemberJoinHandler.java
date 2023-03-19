@@ -6,11 +6,10 @@ import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
-import org.springframework.stereotype.Component;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/14 17:52
+ * @Author by kuuhaku
+ * @Date 2021/2/14 17:52
  * @Description 成员加群
  */
 @HandlerComponent
@@ -25,8 +24,8 @@ public class MemberJoinHandler {
             MessageChain messageChain = MessageUtils.newChain();
             At invitorAt = new At(invitorId);
             At memberAt = new At(memberId);
-            messageChain = messageChain.plus(memberAt).plus("进群了");
-            messageChain = messageChain.plus("邀请者是").plus(invitorAt);
+            messageChain = messageChain.plus(memberAt).plus(" 进群了");
+            messageChain = messageChain.plus(" 邀请者是").plus(invitorAt);
             event.getGroup().sendMessage(messageChain);
             return;
         }
@@ -35,7 +34,7 @@ public class MemberJoinHandler {
             long memberId = active.getMember().getId();
             At memberAt = new At(memberId);
             MessageChain messageChain = MessageUtils.newChain();
-            messageChain = messageChain.plus(memberAt).plus("欢迎进群");
+            messageChain = messageChain.plus(memberAt).plus(" 欢迎进群");
             event.getGroup().sendMessage(messageChain);
         }
     }

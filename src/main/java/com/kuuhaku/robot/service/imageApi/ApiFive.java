@@ -11,19 +11,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 18:16
+ * @Author by kuuhaku
+ * @Date 2021/2/13 18:16
  * @Description 三秋API
  */
 
 @Slf4j
 @Service
 @Primary
-public class ApiFive implements CommonImageApi{
+public class ApiFive implements CommonImageApi {
     @Override
     public String getDownloadUri() {
-        try
-        {
+        try {
             HttpURLConnection conn = (HttpURLConnection) new URL("https://api.ghser.com/random/api.php")
                     .openConnection();
             //设置为不对http链接进行重定向处理

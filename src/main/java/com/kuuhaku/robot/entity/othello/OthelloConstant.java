@@ -1,8 +1,8 @@
 package com.kuuhaku.robot.entity.othello;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/11 14:07
+ * @Author by kuuhaku
+ * @Date 2021/2/11 14:07
  * @Description 黑白棋常量
  */
 public class OthelloConstant {
@@ -65,7 +65,7 @@ public class OthelloConstant {
     /**
      * 棋局状态
      */
-    public static final int BOARD_STATUS_PREPARE= 1;
+    public static final int BOARD_STATUS_PREPARE = 1;
     public static final int BOARD_STATUS_START = 2;
     public static final int BOARD_STATUS_OVER = 3;
 }

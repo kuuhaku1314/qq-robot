@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./demo.db
+    username:
+    password:
+    driver-class-name: org.sqlite.JDBC
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath:monitor.sql

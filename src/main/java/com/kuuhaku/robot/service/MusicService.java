@@ -15,6 +15,7 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -22,8 +23,8 @@ import java.util.List;
 
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 21:13
+ * @Author by kuuhaku
+ * @Date 2021/2/13 21:13
  * @Description 网易云音乐相关
  */
 @Service
@@ -43,6 +44,7 @@ public class MusicService {
 
     /**
      * 文字分享版本
+     *
      * @param list
      * @param messageChain
      * @return
@@ -61,7 +63,10 @@ public class MusicService {
     }
 
     public String getMusicListImagePath(List<NetEaseMusic> list) {
-        StringBuilder imageInfo = new StringBuilder("我找到了这些~!" + "\n" + "=== 网易云音乐 ===" + "\n");
+        StringBuilder imageInfo = new StringBuilder("""
+                我找到了这些~!
+                === 网易云音乐 ===
+                """);
         for (int i = 0; i < list.size(); i++) {
             imageInfo.append(i + 1).append(". ").append(list.get(i).getName()).append(" - ");
             List<String> artists = list.get(i).getArtists();
@@ -69,7 +74,10 @@ public class MusicService {
             imageInfo.append("\n");
         }
         String imagePath = downloadService.getRandomPngPath();
-        return MojiUtil.createImage(imageInfo.toString(), imagePath);
+        if (MojiUtil.createImage(imageInfo.toString(), imagePath)) {
+            return imagePath;
+        }
+        return null;
     }
 
 
@@ -79,6 +87,7 @@ public class MusicService {
 
     /**
      * 获取本地路径
+     *
      * @param netEaseMusic
      * @return
      */
@@ -126,18 +135,39 @@ public class MusicService {
 
     /**
      * 返回mp3文件播放时长，单位s
+     *
      * @param mp3File
      * @return
      */
     private int getMp3TrackLength(File mp3File) {
         try {
             MP3File f = (MP3File) AudioFileIO.read(mp3File);
-            MP3AudioHeader audioHeader = (MP3AudioHeader)f.getAudioHeader();
+            MP3AudioHeader audioHeader = (MP3AudioHeader) f.getAudioHeader();
             return audioHeader.getTrackLength();
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.info("读取mp3长度发生异常");
             return 1;
         }
     }
 
+    public boolean mp3ToAmr(String srcPath, String tgtPath) {
+        File source = new File(srcPath);
+        File target = new File(tgtPath);
+        AudioAttributes audio = new AudioAttributes();
+        audio.setCodec("libamr_wb");
+        audio.setChannels(1);
+        audio.setSamplingRate(16000);
+        audio.setBitRate(23850);
+        EncodingAttributes attrs = new EncodingAttributes();
+        attrs.setFormat("amr");
+        attrs.setAudioAttributes(audio);
+        Encoder encoder = new Encoder();
+        try {
+            encoder.encode(source, target, attrs);
+        } catch (EncoderException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 }

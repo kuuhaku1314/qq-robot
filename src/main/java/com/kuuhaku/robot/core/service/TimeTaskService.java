@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 17:04
+ * @Author by kuuhaku
+ * @Date 2021/2/12 17:04
  * @Description 定时任务执行服务
  */
 @Service
@@ -32,6 +35,10 @@ public class TimeTaskService {
         futureMap.put(key, future);
     }
 
+    public void submitTask(Runnable task, long delay, TimeUnit timeUnit) {
+        executor.schedule(task, delay, timeUnit);
+    }
+
     public boolean cancelTask(String key) {
         ScheduledFuture<?> scheduledFuture = futureMap.get(key);
         if (scheduledFuture == null) {
@@ -44,6 +51,7 @@ public class TimeTaskService {
 
     /**
      * 超过一千条清除
+     *
      * @param map 任务结果map
      */
     private synchronized void checkMap(Map<String, ScheduledFuture<?>> map) {

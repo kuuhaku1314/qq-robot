@@ -2,25 +2,26 @@ package com.kuuhaku.robot.service;
 
 import com.kuuhaku.robot.utils.RandomUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 3:16
+ * @Author by kuuhaku
+ * @Date 2021/2/13 3:16
  * @Description 复读service
  */
 @Service
 public class RepeatService {
-    private final Map<String, String> map = new ConcurrentHashMap<>();
+    private final Map<Long, String> map = new ConcurrentHashMap<>();
     /**
      * 排除那些词不进行复读
      */
     private static final Set<String> KEYWORDS = new HashSet<>();
+
     static {
         KEYWORDS.add("[图片]");
         KEYWORDS.add("[语音消息]");
@@ -28,24 +29,44 @@ public class RepeatService {
         KEYWORDS.add("[戳一戳]");
         KEYWORDS.add("dd");
         KEYWORDS.add("涩图");
+        KEYWORDS.add("[动画表情]");
+        KEYWORDS.add("@");
+        KEYWORDS.add("运势");
+        KEYWORDS.add("叫号");
+        KEYWORDS.add("人生重开");
+        KEYWORDS.add("塔罗牌占卜");
+        KEYWORDS.add("抽签");
+        KEYWORDS.add("转发消息");
+        KEYWORDS.add("p图");
+        KEYWORDS.add("Y");
+        KEYWORDS.add("N");
+        KEYWORDS.add("DK");
+        KEYWORDS.add("P");
+        KEYWORDS.add("PN");
+        KEYWORDS.add("y");
+        KEYWORDS.add("n");
+        KEYWORDS.add("dk");
+        KEYWORDS.add("p");
+        KEYWORDS.add("pn");
     }
 
     public void tryRepeat(MessageEvent event) {
         String content = event.getMessage().contentToString();
         // 关键词不复读
-        if (KEYWORDS.contains(content)) {
-            return;
+        for (String keyword : KEYWORDS) {
+            if (content.contains(keyword)) {
+                return;
+            }
         }
-        String groupId = event.getSubject().getId() + "";
-        String s = map.get(groupId);
-        if (s != null && s.equals(content)) {
-            if (RandomUtil.isPass(30)) {
-                MessageChain result = MessageUtils.newChain();
-                result = result.plus(content);
-                event.getSubject().sendMessage(result);
+        var groupId = event.getSubject().getId();
+        String msg = map.get(groupId);
+        if (msg != null && msg.equals(content)) {
+            if (RandomUtil.isPass(20)) {
+                event.getSubject().sendMessage(content);
             }
         } else {
             map.put(groupId, content);
         }
     }
+
 }

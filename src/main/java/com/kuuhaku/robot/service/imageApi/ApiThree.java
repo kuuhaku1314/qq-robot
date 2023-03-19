@@ -1,15 +1,15 @@
 package com.kuuhaku.robot.service.imageApi;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuuhaku.robot.utils.HttpUtil;
+import com.kuuhaku.robot.utils.HttpsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 18:16
+ * @Author by kuuhaku
+ * @Date 2021/2/13 18:16
  * @Description 樱花
  */
 @Service
@@ -19,7 +19,7 @@ public class ApiThree implements CommonImageApi {
     @Override
     public String getDownloadUri() {
         try {
-            String json = HttpUtil.get("http://www.dmoe.cc/random.php?return=json");
+            String json = new String(HttpsUtil.doGet("https://www.dmoe.cc/random.php?return=json"));
             JSONObject jsonObject = JSONObject.parseObject(json);
             Integer status = jsonObject.getInteger("code");
             String img = jsonObject.getString("imgurl");

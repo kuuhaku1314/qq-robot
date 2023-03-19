@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 1:20
+ * @Author by kuuhaku
+ * @Date 2021/2/13 1:20
  * @Description 执行一些耗时任务的执行器
  */
 @Service

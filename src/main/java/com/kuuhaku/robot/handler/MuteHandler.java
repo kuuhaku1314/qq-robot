@@ -15,21 +15,22 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 0:33
+ * @Author by kuuhaku
+ * @Date 2021/2/13 0:33
  * @Description 关键词禁言
  */
 @HandlerComponent
 public class MuteHandler {
     private final Map<String, Set<String>> map = new ConcurrentHashMap<>();
 
+
+    // 设置了禁言关键词后由这个方法进行禁言
     @Handler(order = -100)
     public void toMute(ChannelContext ctx) {
         MessageEvent event = ctx.event();
@@ -64,7 +65,8 @@ public class MuteHandler {
     }
 
     @Permission(level = PermissionRank.ADMIN)
-    @Handler(values = {"添加禁言关键词"}, types = {HandlerMatchType.START})
+    @Handler(values = {"添加禁言关键词"}, types = {HandlerMatchType.START},
+            description = "格式如[添加禁言关键词 加群]去添加禁言关键词，需要有管理员权限才能禁言")
     public void addMuteKeyword(ChannelContext ctx) {
         if (ctx.command().isEmpty()) {
             return;
@@ -79,7 +81,8 @@ public class MuteHandler {
     }
 
     @Permission(level = PermissionRank.ADMIN)
-    @Handler(values = {"移除禁言关键词"}, types = {HandlerMatchType.START})
+    @Handler(values = {"移除禁言关键词"}, types = {HandlerMatchType.START},
+            description = "格式如[添加禁言关键词 加群]去移除已加的禁言关键词")
     public void removeMuteKeyword(ChannelContext ctx) {
         if (ctx.command().isEmpty()) {
             return;
@@ -88,12 +91,13 @@ public class MuteHandler {
         if (set == null) {
             ctx.group().sendMessage("当前无禁言词");
         } else {
-            set.removeAll(ctx.command().params());
+            ctx.command().params().forEach(set::remove);
             ctx.group().sendMessage("移除成功");
         }
     }
 
-    @Handler(values = {"当前禁言关键词"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"当前禁言关键词"}, types = {HandlerMatchType.COMPLETE},
+            description = "当前已加的禁言关键词列表")
     public void muteKeyword(ChannelContext ctx) {
         Set<String> set = map.get(ctx.groupIdStr());
         if (set == null || set.isEmpty()) {

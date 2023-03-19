@@ -13,8 +13,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/11 14:03
+ * @Author by kuuhaku
+ * @Date 2021/2/11 14:03
  * @Description 黑白棋盘
  */
 public class OthelloBoard {
@@ -39,10 +39,12 @@ public class OthelloBoard {
     private long createTime;
     private int boardStatus;
 
-    private OthelloBoard() {}
+    private OthelloBoard() {
+    }
 
     /**
      * 创建新实例
+     *
      * @return 棋盘实例对象
      */
     public static OthelloBoard instant() {
@@ -53,6 +55,7 @@ public class OthelloBoard {
 
     /**
      * 初始化
+     *
      * @param blackUser 黑方
      * @param whiteUser 白方
      */
@@ -80,7 +83,7 @@ public class OthelloBoard {
             // 第一轮超时任务启动
             new Timer(curTurn, curUserName()).start();
             produceQueue.add(boardInfo());
-            while(true) {
+            while (true) {
                 try {
                     ChessOperation chessOperation = consumerQueue.take();
                     lock.lock();
@@ -172,6 +175,7 @@ public class OthelloBoard {
 
     /**
      * 检测场中是否有能下棋子
+     *
      * @return 能或不能
      */
     private int checkStatus() {
@@ -190,9 +194,10 @@ public class OthelloBoard {
 
     /**
      * 操作
+     *
      * @param chess 操作棋子
-     * @param x x下标
-     * @param y y下标
+     * @param x     x下标
+     * @param y     y下标
      * @return 操作结果 成功或失败
      */
     private int operate(int x, int y, int chess) {
@@ -213,6 +218,7 @@ public class OthelloBoard {
 
     /**
      * 获取用户棋子类型
+     *
      * @param user 用户
      * @return 黑棋或白棋
      */
@@ -249,7 +255,7 @@ public class OthelloBoard {
         int totalEatChessNum = 0;
         BoardVisitor boardVisitor = new BoardVisitor(othelloBoard, new Point(x, y));
         List<Point> eatChessPoint = new ArrayList<>();
-        for (int visitMethod: eatChessRule) {
+        for (int visitMethod : eatChessRule) {
             int eatChessNum = 0;
             boolean hasSameChess = false;
             List<Point> tempPointList = new ArrayList<>();
@@ -299,6 +305,7 @@ public class OthelloBoard {
 
     /**
      * 棋局信息
+     *
      * @return 信息
      */
     private String boardInfo() {
@@ -322,6 +329,7 @@ public class OthelloBoard {
 
     /**
      * 是否完成对局
+     *
      * @return 当前所剩空格子
      */
     private boolean checkIsComplete() {
@@ -338,6 +346,7 @@ public class OthelloBoard {
 
     /**
      * 获取黑白棋子数目
+     *
      * @return black:white
      */
     private int[] getBlackAndWhiteNum() {
@@ -357,7 +366,7 @@ public class OthelloBoard {
 
     private String getEndMessage() {
         int[] blackAndWhiteNum = getBlackAndWhiteNum();
-        String endMsg = "本次对局结束\n" + "黑比白比分为:" + blackAndWhiteNum[0] + ":" + blackAndWhiteNum[1] +"\n";
+        String endMsg = "本次对局结束\n" + "黑比白比分为:" + blackAndWhiteNum[0] + ":" + blackAndWhiteNum[1] + "\n";
         if (blackAndWhiteNum[0] == blackAndWhiteNum[1]) {
             endMsg = endMsg + "平局";
         } else if (blackAndWhiteNum[0] > blackAndWhiteNum[1]) {
@@ -375,6 +384,7 @@ public class OthelloBoard {
     private class Timer extends Thread {
         private int curTurn;
         private String username;
+
         @Override
         public void run() {
             try {
@@ -390,7 +400,7 @@ public class OthelloBoard {
                     lock.unlock();
                     return;
                 }
-                OthelloBoard.this.produceQueue.add("[" + username + "]超过" + timeout/1000 +"秒没有下子已超时，系统将自动下子");
+                OthelloBoard.this.produceQueue.add("[" + username + "]超过" + timeout / 1000 + "秒没有下子已超时，系统将自动下子");
                 // 找一个可以下子的地方下，遍历，选最大一个
                 int maxX = 0, maxY = 0, maxValue = 0;
                 for (int i = 0; i < OthelloBoard.LENGTH; i++) {
@@ -444,27 +454,17 @@ public class OthelloBoard {
 
         public VisitResult visit(int visitMethod) {
             VisitResult result = new VisitResult();
-            Point nextPoint;
-            switch (visitMethod) {
-                case VisitMethod.LEFT:
-                    nextPoint = new Point(curPoint.x - 1, curPoint.y); break;
-                case VisitMethod.RIGHT:
-                    nextPoint = new Point(curPoint.x + 1, curPoint.y); break;
-                case VisitMethod.UP:
-                    nextPoint = new Point(curPoint.x, curPoint.y + 1); break;
-                case VisitMethod.DOWN:
-                    nextPoint = new Point(curPoint.x, curPoint.y - 1); break;
-                case VisitMethod.LEFT_UP:
-                    nextPoint = new Point(curPoint.x - 1, curPoint.y + 1); break;
-                case VisitMethod.LEFT_DOWN:
-                    nextPoint = new Point(curPoint.x - 1, curPoint.y - 1); break;
-                case VisitMethod.RIGHT_UP:
-                    nextPoint = new Point(curPoint.x + 1, curPoint.y + 1); break;
-                case VisitMethod.RIGHT_DOWN:
-                    nextPoint = new Point(curPoint.x + 1, curPoint.y - 1); break;
-                default:
-                    throw new RuntimeException("wrong visit method");
-            }
+            Point nextPoint = switch (visitMethod) {
+                case VisitMethod.LEFT -> new Point(curPoint.x - 1, curPoint.y);
+                case VisitMethod.RIGHT -> new Point(curPoint.x + 1, curPoint.y);
+                case VisitMethod.UP -> new Point(curPoint.x, curPoint.y + 1);
+                case VisitMethod.DOWN -> new Point(curPoint.x, curPoint.y - 1);
+                case VisitMethod.LEFT_UP -> new Point(curPoint.x - 1, curPoint.y + 1);
+                case VisitMethod.LEFT_DOWN -> new Point(curPoint.x - 1, curPoint.y - 1);
+                case VisitMethod.RIGHT_UP -> new Point(curPoint.x + 1, curPoint.y + 1);
+                case VisitMethod.RIGHT_DOWN -> new Point(curPoint.x + 1, curPoint.y - 1);
+                default -> throw new RuntimeException("wrong visit method");
+            };
             if (nextPoint.x < 0 || nextPoint.x >= xLength || nextPoint.y < 0 || nextPoint.y >= yLength) {
                 result.setWalked(false);
                 result.setPoint(curPoint);
@@ -522,9 +522,9 @@ public class OthelloBoard {
             for (int i = 0; i < LENGTH; i++) {
                 for (int j = 0; j < LENGTH; j++) {
                     if (othelloBoard[i][j] == OthelloConstant.BLACK) {
-                        board[i+1][j+1] = -1;
+                        board[i + 1][j + 1] = -1;
                     } else if (othelloBoard[i][j] == OthelloConstant.WHITE) {
-                        board[i+1][j+1] = 1;
+                        board[i + 1][j + 1] = 1;
                     }
                 }
             }
@@ -532,7 +532,7 @@ public class OthelloBoard {
         }
 
         private void start() {
-            Runnable runnable = ()-> {
+            Runnable runnable = () -> {
                 ReentrantLock lock = OthelloBoard.this.lock;
                 while (true) {
                     try {
@@ -549,7 +549,7 @@ public class OthelloBoard {
                             continue;
                         }
                         Point point = bestPoint();
-                        produceQueue.add("[AI]["+userName+"]下子 X="+ (point.x+1) +",Y=" + (8 - point.y));
+                        produceQueue.add("[AI][" + userName + "]下子 X=" + (point.x + 1) + ",Y=" + (8 - point.y));
                         consumerQueue.add(new ChessOperation(OthelloConstant.OPERATE_MESSAGE, point.x, point.y, userID));
                         lock.unlock();
                     } catch (InterruptedException e) {

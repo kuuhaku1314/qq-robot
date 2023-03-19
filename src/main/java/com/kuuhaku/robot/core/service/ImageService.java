@@ -1,6 +1,7 @@
 package com.kuuhaku.robot.core.service;
 
 import lombok.extern.slf4j.Slf4j;
+import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.ContactList;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -14,8 +15,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 2:20
+ * @Author by kuuhaku
+ * @Date 2021/2/12 2:20
  * @Description 发送图片service
  */
 @Service
@@ -39,7 +40,22 @@ public class ImageService {
             return null;
         }
         ExternalResource externalResource = ExternalResource.create(new File(localPath));
-        Image image =  group.uploadImage(externalResource);
+        Image image = group.uploadImage(externalResource);
+        try {
+            externalResource.inputStream().close();
+            externalResource.close();
+            log.info("关闭图片流成功");
+            return image;
+        } catch (IOException e) {
+            log.info("关闭图片流出现异常");
+            e.printStackTrace();
+            return image;
+        }
+    }
+
+    public Image uploadImage(String localPath, Contact group) {
+        ExternalResource externalResource = ExternalResource.create(new File(localPath));
+        Image image = group.uploadImage(externalResource);
         try {
             externalResource.inputStream().close();
             externalResource.close();
@@ -54,6 +70,7 @@ public class ImageService {
 
     /**
      * 解释图片为message
+     *
      * @param image 图片
      * @return 图片信息
      */

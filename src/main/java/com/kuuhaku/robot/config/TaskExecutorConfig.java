@@ -8,8 +8,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 1:10
+ * @Author by kuuhaku
+ * @Date 2021/2/13 1:10
  * @Description 普通任务执行器
  */
 @Configuration
@@ -24,6 +24,7 @@ public class TaskExecutorConfig {
 
     public final ThreadFactory factory = new ThreadFactory() {
         private final AtomicInteger count = new AtomicInteger(0);
+
         @Override
         public Thread newThread(@NotNull Runnable r) {
             Thread thread = new Thread(r);

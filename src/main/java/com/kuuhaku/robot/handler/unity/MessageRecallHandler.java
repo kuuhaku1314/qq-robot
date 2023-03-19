@@ -5,8 +5,8 @@ import com.kuuhaku.robot.common.annotation.HandlerComponent;
 import com.kuuhaku.robot.common.annotation.Permission;
 import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import com.kuuhaku.robot.core.chain.ChannelContext;
-import com.kuuhaku.robot.service.RecordService;
 import com.kuuhaku.robot.core.service.TimeTaskService;
+import com.kuuhaku.robot.service.RecordService;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.contact.Member;
 import net.mamoe.mirai.event.events.MessageRecallEvent;
@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 22:36
+ * @Author by kuuhaku
+ * @Date 2021/2/12 22:36
  * @Description 发送撤回消息
  */
 @HandlerComponent
@@ -32,6 +32,7 @@ public class MessageRecallHandler {
 
     @Autowired
     private TimeTaskService timeTaskService;
+
 
     public void doHandler(MessageRecallEvent.GroupRecall event) {
         long authorId = event.getAuthorId();
@@ -66,9 +67,9 @@ public class MessageRecallHandler {
     }
 
     @Permission
-    @Handler(values = {"取消发送已撤回消息"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"取消发送已撤回消息"}, types = {HandlerMatchType.COMPLETE}, description = "让机器人不发送你撤回的消息")
     public void cancelSend(ChannelContext context) {
-        boolean flag = timeTaskService.cancelTask(RECALL +context.groupId() + ":" + context.senderId());
+        boolean flag = timeTaskService.cancelTask(RECALL + context.groupId() + ":" + context.senderId());
         if (flag) {
             At at = new At(context.senderId());
             MessageChain messageChain = MessageUtils.newChain();

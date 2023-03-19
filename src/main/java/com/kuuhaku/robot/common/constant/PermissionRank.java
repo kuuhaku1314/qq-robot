@@ -1,8 +1,8 @@
 package com.kuuhaku.robot.common.constant;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 1:40
+ * @Author by kuuhaku
+ * @Date 2021/2/13 1:40
  * @Description 权限等级
  */
 public class PermissionRank {

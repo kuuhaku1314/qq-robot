@@ -9,8 +9,8 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/14 17:53
+ * @Author by kuuhaku
+ * @Date 2021/2/14 17:53
  * @Description 用户离开群
  */
 @HandlerComponent

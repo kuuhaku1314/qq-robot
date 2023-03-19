@@ -58,7 +58,7 @@ public class OthelloService {
             return YOU_CREATED_BOARD;
         }
         int aiNum = hasAI ? 1 : 0;
-        ChessChannel chessChannel = othelloBoard.start( otherUserId + "", usernameMap.get(otherUserId),userId + "", username, OthelloConstant.BLACK, aiNum);
+        ChessChannel chessChannel = othelloBoard.start(otherUserId + "", usernameMap.get(otherUserId), userId + "", username, OthelloConstant.BLACK, aiNum);
         chessChannelMap.put(chessChannelKey, chessChannel);
         chessChannelMap.put(generateChessChannelKey(groupId, otherUserId), chessChannel);
         playerMap.put(chessChannelKey, generateChessChannelKey(groupId, otherUserId));

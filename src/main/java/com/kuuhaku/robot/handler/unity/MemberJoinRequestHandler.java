@@ -6,11 +6,10 @@ import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
-import org.springframework.stereotype.Component;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/14 17:53
+ * @Author by kuuhaku
+ * @Date 2021/2/14 17:53
  * @Description 入群请求事件，只有机器人是管理才能收到
  */
 @HandlerComponent

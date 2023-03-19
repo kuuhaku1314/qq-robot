@@ -12,10 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
-
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/10 20:18
+ * @Author by kuuhaku
+ * @Date 2021/2/10 20:18
  * @Description 消息监听器
  */
 @Component

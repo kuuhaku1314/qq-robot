@@ -10,22 +10,8 @@ import net.mamoe.mirai.event.events.MessageEvent;
  * @Date 2021/4/23 23:40
  * @Description
  */
-public class ChannelContext {
-
-    private final Command command;
-
-    private final MessageEvent event;
-
-
-    public ChannelContext(Command command, MessageEvent event) {
-        this.command = command;
-        this.event = event;
-    }
-
-
-    public Command command() {
-        return command;
-    }
+public record ChannelContext(Command command,
+                             MessageEvent event) {
 
     public Command reverseCommand() {
         return command.reverseCommand();
@@ -57,10 +43,6 @@ public class ChannelContext {
 
     public String nickname() {
         return event.getSender().getNick();
-    }
-
-    public MessageEvent event() {
-        return event;
     }
 
 

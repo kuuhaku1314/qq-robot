@@ -11,11 +11,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.UUID;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 17:52
+ * @Author by kuuhaku
+ * @Date 2021/2/13 17:52
  * @Description 使用api调用获取图片
  */
 @Service
@@ -34,6 +33,7 @@ public class ImageApiService {
 
     /**
      * 随机使用一个api获取图片
+     *
      * @return 本地图片路径
      */
     public String randomImagePath() {
@@ -53,6 +53,7 @@ public class ImageApiService {
 
     /**
      * 返回本地路径
+     *
      * @param urlStr 下载的uri
      * @return 本地路径
      */

@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/11 7:21
+ * @Author by kuuhaku
+ * @Date 2021/2/11 7:21
  * @Description 井字棋盘
  */
 @Slf4j
@@ -27,10 +27,12 @@ public class ChessBoard {
     private final Set<Chess> redSet = new HashSet<>(5);
     private final Set<Chess> blackSet = new HashSet<>(5);
 
-    private ChessBoard() {}
+    private ChessBoard() {
+    }
 
     /**
      * new一个实例
+     *
      * @return 实例
      */
     public static ChessBoard instant() {
@@ -39,7 +41,8 @@ public class ChessBoard {
 
     /**
      * 初始化
-     * @param red 红方
+     *
+     * @param red   红方
      * @param black 黑方
      */
     public void init(String red, String black) {
@@ -48,18 +51,18 @@ public class ChessBoard {
         this.flag = red;
         this.turn = 0;
         createTime = System.currentTimeMillis();
-        chessBoard[0][0] = new Chess(ChessConstant.APPLE, 0,0, red);
-        chessBoard[0][1] = new Chess(ChessConstant.MELON, 0,1, red);
-        chessBoard[0][2] = new Chess(ChessConstant.STRAW, 0,2, red);
+        chessBoard[0][0] = new Chess(ChessConstant.APPLE, 0, 0, red);
+        chessBoard[0][1] = new Chess(ChessConstant.MELON, 0, 1, red);
+        chessBoard[0][2] = new Chess(ChessConstant.STRAW, 0, 2, red);
         redSet.add(chessBoard[0][0]);
         redSet.add(chessBoard[0][1]);
         redSet.add(chessBoard[0][2]);
-        chessBoard[1][0] = new Chess(ChessConstant.EMPTY, 1,0, null);
-        chessBoard[1][1] = new Chess(ChessConstant.EMPTY, 1,1, null);
-        chessBoard[1][2] = new Chess(ChessConstant.EMPTY, 1,2, null);
-        chessBoard[2][0] = new Chess(ChessConstant.SUN, 2,0, black);
-        chessBoard[2][1] = new Chess(ChessConstant.MOON, 2,1, black);
-        chessBoard[2][2] = new Chess(ChessConstant.STAR, 2,2, black);
+        chessBoard[1][0] = new Chess(ChessConstant.EMPTY, 1, 0, null);
+        chessBoard[1][1] = new Chess(ChessConstant.EMPTY, 1, 1, null);
+        chessBoard[1][2] = new Chess(ChessConstant.EMPTY, 1, 2, null);
+        chessBoard[2][0] = new Chess(ChessConstant.SUN, 2, 0, black);
+        chessBoard[2][1] = new Chess(ChessConstant.MOON, 2, 1, black);
+        chessBoard[2][2] = new Chess(ChessConstant.STAR, 2, 2, black);
         blackSet.add(chessBoard[2][0]);
         blackSet.add(chessBoard[2][1]);
         blackSet.add(chessBoard[2][2]);
@@ -67,6 +70,7 @@ public class ChessBoard {
 
     /**
      * 从指令获取真实名字
+     *
      * @param chessName 指令名
      * @return 真实名字
      */
@@ -91,8 +95,9 @@ public class ChessBoard {
 
     /**
      * 获取棋子
+     *
      * @param chessName 棋子名字
-     * @param user 棋子所属用户
+     * @param user      棋子所属用户
      * @return 棋子对象
      */
     private Chess getChess(String chessName, String user) {
@@ -206,6 +211,7 @@ public class ChessBoard {
 
     /**
      * 交互两棋位置
+     *
      * @param one 棋一
      * @param two 棋二
      */
@@ -222,6 +228,7 @@ public class ChessBoard {
 
     /**
      * 检测对局是否完成
+     *
      * @return 若完成返回胜利者
      */
     public String checkComplete() {
@@ -244,6 +251,7 @@ public class ChessBoard {
 
     /**
      * 检测回合是否到达上限
+     *
      * @return 真即为到达
      */
     public boolean checkEnableDo() {
@@ -256,9 +264,10 @@ public class ChessBoard {
 
     /**
      * 下棋
-     * @param user 用户
+     *
+     * @param user        用户
      * @param operateName 操作名
-     * @param chessName 操作棋子
+     * @param chessName   操作棋子
      * @return 是否操作成功
      */
     public boolean operate(String user, String operateName, String chessName) {
@@ -308,6 +317,7 @@ public class ChessBoard {
 
     /**
      * 检测是否到达上限时间
+     *
      * @return 真即为到达
      */
     public boolean checkAlive() {
@@ -320,6 +330,7 @@ public class ChessBoard {
 
     /**
      * 棋盘信息转为message
+     *
      * @param messageChain 原message
      * @return 拼接后的message
      */

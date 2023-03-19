@@ -6,14 +6,16 @@ import com.kuuhaku.robot.core.chain.ChannelContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 2:53
+ * @Author by kuuhaku
+ * @Date 2021/2/13 2:53
  * @Description 打印日志
  */
 @HandlerComponent
 @Slf4j
 public class LogHandler {
 
+
+    // 打印日志
     @Handler(order = Integer.MIN_VALUE)
     public void toRecord(ChannelContext ctx) {
         String message = ctx.event().getMessage().contentToString();

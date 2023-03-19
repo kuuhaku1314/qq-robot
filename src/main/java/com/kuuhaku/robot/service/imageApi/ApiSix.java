@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/13 18:17
+ * @Author by kuuhaku
+ * @Date 2021/2/13 18:17
  * @Description 呓喵酱API
  */
 @Service
@@ -21,8 +21,7 @@ import java.util.Set;
 public class ApiSix implements CommonImageApi {
     @Override
     public String getDownloadUri() {
-        try
-        {
+        try {
             HttpURLConnection conn = (HttpURLConnection) new URL("https://api.yimian.xyz/img?type=moe&R18=false")
                     .openConnection();
             //设置为不对http链接进行重定向处理

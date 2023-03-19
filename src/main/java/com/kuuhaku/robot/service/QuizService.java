@@ -9,7 +9,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.PostConstruct;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,30 +29,30 @@ public class QuizService {
 
     @PostConstruct
     void init() {
-        InputStream inputStream = null;
-        try {
-            inputStream = new FileInputStream(quizPath);
-        } catch (FileNotFoundException e) {
+        try (InputStream inputStream = new FileInputStream(quizPath)) {
+
+            Yaml yaml = new Yaml();
+            Map properties = yaml.loadAs(inputStream, Map.class);
+            for (Object value : properties.values()) {
+                Map<Object, Object> subProperties = (Map<Object, Object>) value;
+                String title = (String) subProperties.get("question");
+                List<String> answers = new ArrayList<>();
+                ArrayList<Map<Object, Object>> answersProperties = (ArrayList<Map<Object, Object>>) subProperties.get("answers");
+                answersProperties.forEach((m) -> {
+                    answers.add((String) m.get("answer"));
+                });
+                Quiz quiz = new Quiz();
+                quiz.setTitle(title);
+                quiz.setAnswers(answers);
+                quizList.add(quiz);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        Yaml yaml = new Yaml();
-        Map<Object, Object> properties = yaml.loadAs(inputStream, Map.class);
-        for (Object value : properties.values()) {
-            Map<Object, Object> subProperties = (Map<Object, Object>) value;
-            String title = (String) subProperties.get("question");
-            List<String> answers = new ArrayList<>();
-            ArrayList<Map<Object, Object>> answersProperties = (ArrayList<Map<Object, Object>>) subProperties.get("answers");
-            answersProperties.forEach((m) -> {
-                answers.add((String) m.get("answer"));
-            });
-            Quiz quiz = new Quiz();
-            quiz.setTitle(title);
-            quiz.setAnswers(answers);
-            quizList.add(quiz);
+            throw new RuntimeException(e);
         }
     }
 
-    public Quiz RandomQuiz(){
+    public Quiz randomQuiz() {
         return quizList.get(RandomUtil.random(quizList.size()));
     }
 }

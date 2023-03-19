@@ -14,9 +14,11 @@ public class ChessChannel {
     private final BlockingQueue<String> produceQueue;
     private final BlockingQueue<ChessOperation> consumerQueue;
     private final Thread thread;
+
     public String take() throws InterruptedException {
         return produceQueue.take();
     }
+
     public void add(ChessOperation chessOperation) {
         consumerQueue.add(chessOperation);
     }

@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/12 2:04
+ * @Author by kuuhaku
+ * @Date 2021/2/12 2:04
  * @Description 黑白棋
  */
 @HandlerComponent
@@ -29,16 +29,22 @@ public class OthelloHandler {
     private final AtomicLong AIId = new AtomicLong(1);
 
     @Permission
-    @Handler(values = {"创建黑白棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"创建黑白棋"}, types = {HandlerMatchType.COMPLETE}, description = "创建黑白棋局")
     public void createBattle(ChannelContext ctx) {
         int code = othelloService.create(ctx.groupId(), ctx.senderId(), ctx.nickname());
         switch (code) {
-            case OthelloService.YOU_IN_BOARD:
-                ctx.group().sendMessage("你已经在黑白棋对局中了，请勿再次创建"); return;
-            case OthelloService.YOU_CREATED_BOARD:
-                ctx.group().sendMessage("你已经创建了黑白棋了，找个人加入吧"); return;
-            case OthelloService.OTHERS_CREATED_BOARD:
-                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧"); return;
+            case OthelloService.YOU_IN_BOARD -> {
+                ctx.group().sendMessage("你已经在黑白棋对局中了，请勿再次创建");
+                return;
+            }
+            case OthelloService.YOU_CREATED_BOARD -> {
+                ctx.group().sendMessage("你已经创建了黑白棋了，找个人加入吧");
+                return;
+            }
+            case OthelloService.OTHERS_CREATED_BOARD -> {
+                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧");
+                return;
+            }
         }
         MessageChain result = MessageUtils.newChain();
         result = result.plus("当前对局所在群为:" + ctx.groupId()).plus("\n");
@@ -54,23 +60,25 @@ public class OthelloHandler {
     }
 
     @Permission
-    @Handler(values = {"加入黑白棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"加入黑白棋"}, types = {HandlerMatchType.COMPLETE}, description = "加入黑白棋局")
     public void joinBattle(ChannelContext ctx) {
         int code = othelloService.join(ctx.groupId(), ctx.senderId(), ctx.nickname(), ctx.group(), false);
         switch (code) {
-            case OthelloService.YOU_IN_BOARD:
-                ctx.group().sendMessage("你已经在对局中，请勿再参加了"); return;
-            case OthelloService.YOU_CREATED_BOARD:
-                ctx.group().sendMessage("不能自己和自己对局"); return;
-            case OthelloService.OTHERS_CREATED_BOARD:
-                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧"); return;
-                case OthelloService.NOT_FOUND_BOARD:
-                    ctx.group().sendMessage("请先创造黑白棋对局");
+            case OthelloService.YOU_IN_BOARD -> {
+                ctx.group().sendMessage("你已经在对局中，请勿再参加了");
+            }
+            case OthelloService.YOU_CREATED_BOARD -> {
+                ctx.group().sendMessage("不能自己和自己对局");
+            }
+            case OthelloService.OTHERS_CREATED_BOARD -> {
+                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧");
+            }
+            case OthelloService.NOT_FOUND_BOARD -> ctx.group().sendMessage("请先创造黑白棋对局");
         }
     }
 
     @Permission
-    @Handler(values = {"00"}, types = {HandlerMatchType.START})
+    @Handler(values = {"00"}, types = {HandlerMatchType.START}, description = "黑白棋局中用来下棋，格式如[00 1 2]，1为棋的x坐标，2为棋y坐标")
     public void battle(ChannelContext ctx) {
         Command command = ctx.command();
         if (command.paramSize() != 2 || !StringUtils.isNumeric(command.params().get(0)) ||
@@ -84,7 +92,7 @@ public class OthelloHandler {
     }
 
     @Permission
-    @Handler(values = {"黑白棋认输"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"黑白棋认输"}, types = {HandlerMatchType.COMPLETE}, description = "黑白棋认输")
     public void give(ChannelContext ctx) {
         int code = othelloService.give(ctx.groupId(), ctx.senderId());
         if (code == OthelloService.NOT_FOUND_BOARD) {
@@ -93,7 +101,7 @@ public class OthelloHandler {
     }
 
     @Permission
-    @Handler(values = {"取消黑白棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"取消黑白棋"}, types = {HandlerMatchType.COMPLETE}, description = "无人应战取消创建")
     public void stop(ChannelContext ctx) {
         if (othelloService.remove(ctx.groupId()) == OthelloService.OK) {
             ctx.group().sendMessage("取消创建成功");
@@ -101,16 +109,22 @@ public class OthelloHandler {
     }
 
     @Permission
-    @Handler(values = {"创建AI黑白棋"}, types = {HandlerMatchType.COMPLETE})
+    @Handler(values = {"创建AI黑白棋"}, types = {HandlerMatchType.COMPLETE}, description = "开始黑白棋AI对局")
     public void createAIBoard(ChannelContext ctx) {
         int code = othelloService.create(ctx.groupId(), ctx.senderId(), ctx.nickname());
         switch (code) {
-            case OthelloService.YOU_IN_BOARD:
-                ctx.group().sendMessage("你已经在黑白棋对局中了，请勿再次创建"); return;
-            case OthelloService.YOU_CREATED_BOARD:
-                ctx.group().sendMessage("你已经创建了黑白棋了，找个人加入吧"); return;
-            case OthelloService.OTHERS_CREATED_BOARD:
-                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧"); return;
+            case OthelloService.YOU_IN_BOARD -> {
+                ctx.group().sendMessage("你已经在黑白棋对局中了，请勿再次创建");
+                return;
+            }
+            case OthelloService.YOU_CREATED_BOARD -> {
+                ctx.group().sendMessage("你已经创建了黑白棋了，找个人加入吧");
+                return;
+            }
+            case OthelloService.OTHERS_CREATED_BOARD -> {
+                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧");
+                return;
+            }
         }
         MessageChain result = MessageUtils.newChain();
         result = result.plus("当前对局所在群为:" + ctx.groupId()).plus("\n");
@@ -125,14 +139,16 @@ public class OthelloHandler {
         ctx.group().sendMessage(result);
         code = othelloService.join(ctx.groupId(), AIId.addAndGet(1), "\uD83D\uDE02\uD83D\uDE02\uD83D\uDE02", ctx.group(), true);
         switch (code) {
-            case OthelloService.YOU_IN_BOARD:
-                ctx.group().sendMessage("你已经在对局中，请勿再参加了"); return;
-            case OthelloService.YOU_CREATED_BOARD:
-                ctx.group().sendMessage("不能自己和自己对局"); return;
-            case OthelloService.OTHERS_CREATED_BOARD:
-                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧"); return;
-            case OthelloService.NOT_FOUND_BOARD:
-                ctx.group().sendMessage("请先创造黑白棋对局");
+            case OthelloService.YOU_IN_BOARD -> {
+                ctx.group().sendMessage("你已经在对局中，请勿再参加了");
+            }
+            case OthelloService.YOU_CREATED_BOARD -> {
+                ctx.group().sendMessage("不能自己和自己对局");
+            }
+            case OthelloService.OTHERS_CREATED_BOARD -> {
+                ctx.group().sendMessage("已经有人创建了黑白棋了，快发送[加入黑白棋]开始对局吧");
+            }
+            case OthelloService.NOT_FOUND_BOARD -> ctx.group().sendMessage("请先创造黑白棋对局");
         }
     }
 }

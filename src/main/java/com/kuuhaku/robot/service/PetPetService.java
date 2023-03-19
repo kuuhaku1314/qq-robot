@@ -2,14 +2,15 @@ package com.kuuhaku.robot.service;
 
 import com.kuuhaku.robot.core.service.DownloadService;
 import com.kuuhaku.robot.core.service.ImageService;
-import com.kuuhaku.robot.utils.ImageUtil;
 import com.madgag.gif.fmsware.AnimatedGifEncoder;
+import com.madgag.gif.fmsware.GifDecoder;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * @Author   by kuuhaku
- * @Date     2021/2/16 7:36
+ * @Author by kuuhaku
+ * @Date 2021/2/16 7:36
  * @Description 搓头
  */
 @Service
@@ -58,197 +59,172 @@ public class PetPetService {
      * 生成gif像素
      */
     public static int imgSize = 114 * 5;
+    public final static int WHITE = 0x00ffffff;
+    public final static int ALPHA = 0x00ffffff;
     /**
      * 爬图片路径
      */
     public static ArrayList<String> list = new ArrayList<>();
-    public static BufferedImage imgOne;
-    public static BufferedImage imgTwo;
-    public static BufferedImage imgThree;
-    public static BufferedImage imgFour;
-    public static BufferedImage imgFive;
+    public static ArrayList<BufferedImage> imageList = new ArrayList<>();
     @Autowired
     private DownloadService downloadService;
     @Autowired
     private ImageService imageService;
 
     @PostConstruct
-    void init () {
-        try {
-            list = DownloadService.getImageFiles(paPath);
-            InputStream imgOneStream = new FileInputStream(petPetPath + "frame0.png");
-            InputStream imgTwoStream = new FileInputStream(petPetPath + "frame1.png");
-            InputStream imgThreeStream = new FileInputStream(petPetPath + "frame2.png");
-            InputStream imgFourStream = new FileInputStream(petPetPath + "frame3.png");
-            InputStream imgFiveStream = new FileInputStream(petPetPath + "frame4.png");
-            imgOne = ImageIO.read(imgOneStream);
-            imgTwo = ImageIO.read(imgTwoStream);
-            imgThree = ImageIO.read(imgThreeStream);
-            imgFour = ImageIO.read(imgFourStream);
-            imgFive = ImageIO.read(imgFiveStream);
-            imgOne = toBufferedImage(imgOne.getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH));
-            imgTwo = toBufferedImage(imgTwo.getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH));
-            imgThree = toBufferedImage(imgThree.getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH));
-            imgFour = toBufferedImage(imgFour.getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH));
-            imgFive = toBufferedImage(imgFive.getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH));
-            imgOneStream.close();
-            imgTwoStream.close();
-            imgThreeStream.close();
-            imgFourStream.close();
-            imgFiveStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    void init() {
+        list = DownloadService.getImageFiles(paPath);
+        for (int i = 0; i < 5; i++) {
+            BufferedImage image;
+            try (var imgStream = new FileInputStream(petPetPath + "frame" + i + ".png")) {
+                image = ImageIO.read(imgStream);
+                imageList.add(toBufferedImage(image.getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private String toThrow(String path) {
-        InputStream throwImageStream = null;
-        InputStream iconStream = null;
-        try {
-            throwImageStream = new FileInputStream(diuPath);
+
+        try (
+                InputStream throwImageStream = new FileInputStream(diuPath);
+                InputStream iconStream = new FileInputStream(path)
+        ) {
             BufferedImage throwImage = ImageIO.read(throwImageStream);
-            throwImageStream.close();
-            throwImageStream = null;
-            iconStream = new FileInputStream(path);
             BufferedImage icon = ImageIO.read(iconStream);
-            iconStream.close();
-            iconStream = null;
             icon = roundImage(icon, icon.getHeight(), icon.getHeight());
             Image iconOne = icon.getScaledInstance(124, 124, Image.SCALE_SMOOTH);
-            throwImage.getGraphics().drawImage(iconOne, 20, 192 ,null);
+            throwImage.getGraphics().drawImage(iconOne, 20, 192, null);
             String outPath = downloadService.getRandomPngPath();
             ImageIO.write(throwImage, "png", new File(outPath));
             return outPath;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (throwImageStream != null) {
-                    throwImageStream.close();
-                }
-                if (iconStream != null) {
-                    iconStream.close();
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
         }
     }
 
     private String toPa(String path) {
-        InputStream paImageStream = null;
-        InputStream iconStream = null;
-        try {
-            int i = new Random(System.currentTimeMillis()).nextInt(list.size());
-            paImageStream = new FileInputStream(list.get(i));
+        try (
+                InputStream paImageStream = new FileInputStream(list.get(RandomUtils.nextInt(0, list.size())));
+                InputStream iconStream = new FileInputStream(path)
+        ) {
             BufferedImage paImage = ImageIO.read(paImageStream);
-            paImageStream.close();
-            paImageStream = null;
-            iconStream = new FileInputStream(path);
             BufferedImage icon = ImageIO.read(iconStream);
-            iconStream.close();
-            iconStream = null;
             icon = roundImage(icon, icon.getHeight(), icon.getHeight());
             Image iconOne = icon.getScaledInstance(paImage.getWidth() / 5, paImage.getHeight() / 5, Image.SCALE_SMOOTH);
-            paImage.getGraphics().drawImage(iconOne, 0, paImage.getHeight() - paImage.getHeight() / 5 ,null);
+            paImage.getGraphics().drawImage(iconOne, 0, paImage.getHeight() - paImage.getHeight() / 5, null);
             String outPath = downloadService.getRandomPngPath();
             ImageIO.write(paImage, "png", new File(outPath));
             return outPath;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (paImageStream != null) {
-                    paImageStream.close();
-                }
-                if (iconStream != null) {
-                    iconStream.close();
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
         }
     }
 
 
     private String toPetPet(String path) {
-        InputStream iconStream = null;
-        OutputStream out = null;
-        try {
-            iconStream = new FileInputStream(path);
-            BufferedImage icon = ImageIO.read(iconStream);
-            iconStream.close();
-            iconStream = null;
+        String outPath = downloadService.getRandomPath() + ".gif";
+        try (
+                var iconStream = new FileInputStream(path);
+                var out = new FileOutputStream(outPath)
+        ) {
+            var icon = ImageIO.read(iconStream);
             icon = roundImage(icon, icon.getHeight(), icon.getWidth());
-            Image iconOne = icon.getScaledInstance((int)(iconWidth[0] * 1.2), (int)(iconHeight[0] * 1.2), Image.SCALE_SMOOTH);
-            Image iconTwo = icon.getScaledInstance((int)(iconWidth[1] * 1.2), (int)(iconHeight[1] * 1.2), Image.SCALE_SMOOTH);
-            Image iconThree = icon.getScaledInstance((int)(iconWidth[2] * 1.2), (int)(iconHeight[2] * 1.2), Image.SCALE_SMOOTH);
-            Image iconFour = icon.getScaledInstance((int)(iconWidth[3] * 1.2), (int)(iconHeight[3] * 1.2), Image.SCALE_SMOOTH);
-            Image iconFive = icon.getScaledInstance((int)(iconWidth[4] * 1.2), (int)(iconHeight[4] * 1.2), Image.SCALE_SMOOTH);
-            BufferedImage imageOne = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
-            BufferedImage imageTwo = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
-            BufferedImage imageThree = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
-            BufferedImage imageFour = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
-            BufferedImage imageFive = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
-            imageOne.getGraphics().drawImage(iconOne, iconX[0], iconY[0], null);
-            imageTwo.getGraphics().drawImage(iconTwo, iconX[1], iconY[1], null);
-            imageThree.getGraphics().drawImage(iconThree, iconX[2], iconY[2], null);
-            imageFour.getGraphics().drawImage(iconFour, iconX[3], iconY[3], null);
-            imageFive.getGraphics().drawImage(iconFive, iconX[4], iconY[4], null);
-            imageOne.getGraphics().drawImage(imgOne, 0, 0, null);
-            imageTwo.getGraphics().drawImage(imgTwo, 0, 0, null);
-            imageThree.getGraphics().drawImage(imgThree, 0, 0, null);
-            imageFour.getGraphics().drawImage(imgFour, 0, 0, null);
-            imageFive.getGraphics().drawImage(imgFive, 0, 0, null);
-            String outPath = downloadService.getRandomPath() + ".gif";
-            out = new FileOutputStream(outPath);
-            AnimatedGifEncoder encoder = new AnimatedGifEncoder();
+            var encoder = new AnimatedGifEncoder();
             encoder.start(out);
             encoder.setRepeat(0);
             encoder.setDelay(40);
-            encoder.addFrame(imageOne);
-            encoder.addFrame(imageTwo);
-            encoder.addFrame(imageThree);
-            encoder.addFrame(imageFour);
-            encoder.addFrame(imageFive);
+            for (int i = 0; i < iconWidth.length; i++) {
+                var image = icon.getScaledInstance((int) (iconWidth[i] * 1.2), (int) (iconHeight[i] * 1.2), Image.SCALE_SMOOTH);
+                var bufferedImage = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
+                bufferedImage.getGraphics().drawImage(image, iconX[i], iconY[i], null);
+                bufferedImage.getGraphics().drawImage(imageList.get(i), 0, 0, null);
+                encoder.addFrame(bufferedImage);
+            }
             encoder.finish();
-            out.close();
-            out = null;
             return outPath;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (iconStream != null) {
-                    iconStream.close();
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
         }
     }
 
-    private String toRipped(String path) {
-        String randomPath = downloadService.getRandomPath();
+    private String toRipped(String inPath) {
+        String outPath = downloadService.getRandomPath();
         try {
-            ImageUtil.splitImage(path, randomPath);
+            BufferedImage bufferedImageOne = ImageIO.read(new File(inPath));
+            BufferedImage bufferedImageTwo = ImageIO.read(new File(inPath));
+            int width = bufferedImageOne.getWidth();
+            int height = bufferedImageOne.getHeight();
+            int medium = width / 2;
+            // 边缘混淆
+            int[] randomX = new Random(System.currentTimeMillis()).ints(0, 2).limit(width).toArray();
+            int[] randomY = new Random(System.currentTimeMillis()).ints(0, 2).limit(height).toArray();
+            for (int i = 0; i < width; i++) {
+                if (randomX[i] == 1) {
+                    bufferedImageOne.setRGB(i, 0, ALPHA);
+                    bufferedImageTwo.setRGB(i, 0, ALPHA);
+                }
+                if (randomX[width - i - 1] == 1) {
+                    bufferedImageOne.setRGB(i, height - 1, ALPHA);
+                    bufferedImageTwo.setRGB(i, height - 1, ALPHA);
+                }
+            }
+            for (int i = 0; i < height; i++) {
+                if (randomY[i] == 1) {
+                    bufferedImageOne.setRGB(0, i, ALPHA);
+                    bufferedImageTwo.setRGB(0, i, ALPHA);
+                }
+                if (randomY[height - 1 - i] == 1) {
+                    bufferedImageOne.setRGB(width - 1, i, ALPHA);
+                    bufferedImageTwo.setRGB(width - 1, i, ALPHA);
+                }
+            }
+
+            // 分割中心线，x坐标数组
+            int[] ints = new Random(System.currentTimeMillis()).ints(0, 2).limit(height).toArray();
+            int[] xArray = new int[height];
+            for (int i = 0; i < height; i++) {
+                if (ints[i] == 1) {
+                    medium++;
+                } else {
+                    medium--;
+                }
+                xArray[i] = medium;
+            }
+            BufferedImage image = new BufferedImage((int) (width * 1.03), height, BufferedImage.TYPE_INT_RGB);
+            for (int i = 0; i < (int) (width * 1.03); i++) {
+                for (int j = 0; j < height; j++) {
+                    image.setRGB(i, j, WHITE);
+                }
+            }
+
+            // 以中心线分割成两张图片
+            for (int i = 0; i < height; i++) {
+                for (int j = xArray[i]; j < width; j++) {
+                    image.setRGB(j + (int) (width * 0.03), i, bufferedImageOne.getRGB(j, i));
+                }
+            }
+            for (int i = 0; i < height; i++) {
+                for (int j = xArray[i]; j >= 0; j--) {
+                    image.setRGB(j, i, bufferedImageOne.getRGB(j, i));
+                }
+            }
+            ImageIO.write(image, "png", new File(outPath));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        return randomPath;
+        return outPath;
     }
 
 
     private BufferedImage toBufferedImage(Image img) {
-        BufferedImage bufImg = new BufferedImage(img.getWidth(null), img.getHeight(null),BufferedImage.TYPE_INT_ARGB);
-        Graphics g = bufImg .createGraphics();
+        BufferedImage bufImg = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = bufImg.createGraphics();
         g.drawImage(img, 0, 0, null);
         g.dispose();
         return bufImg;
@@ -268,7 +244,6 @@ public class PetPetService {
     }
 
     public MessageChain getPetPet(MessageEvent messageEvent, String memberId, Group group) {
-        log.info("搓头获取的at用户id=[{}]", memberId);
         NormalMember member = group.get(Long.parseLong(memberId));
         if (member == null) {
             return null;
@@ -292,7 +267,6 @@ public class PetPetService {
     }
 
     public MessageChain getRipped(MessageEvent messageEvent, String memberId, Group group) {
-        log.info("裂开获取的at用户id=[{}]", memberId);
         NormalMember member = group.get(Long.parseLong(memberId));
         if (member == null) {
             return null;
@@ -316,7 +290,6 @@ public class PetPetService {
     }
 
     public MessageChain getPa(MessageEvent messageEvent, String memberId, Group group) {
-        log.info("爬获取的at用户id=[{}]", memberId);
         NormalMember member = group.get(Long.parseLong(memberId));
         if (member == null) {
             return null;
@@ -340,7 +313,6 @@ public class PetPetService {
     }
 
     public MessageChain getDiu(MessageEvent messageEvent, String memberId, Group group) {
-        log.info("丢获取的at用户id=[{}]", memberId);
         NormalMember member = group.get(Long.parseLong(memberId));
         if (member == null) {
             return null;
@@ -363,8 +335,119 @@ public class PetPetService {
         return messageChain;
     }
 
+    public void reverseGIF(MessageEvent messageEvent) {
+        MessageChain messageChain = MessageUtils.newChain();
+        net.mamoe.mirai.message.data.Image outImage = messageEvent.getMessage().get(net.mamoe.mirai.message.data.Image.Key);
+        if (outImage == null) {
+            return;
+        }
+        // 小于300kb不复读
+        if (outImage.getSize() < 1024 * 300) {
+            return;
+        }
+        String path = downloadService.getRandomPath() + ".gif";
+        downloadService.download(net.mamoe.mirai.message.data.Image.queryUrl(outImage), path);
 
-    public static void main(String[] args) {
-        new PetPetService().toPetPet("D:\\image\\PyPetPet\\111.png");
+        GifDecoder decoder = new GifDecoder();
+        int result = decoder.read(path);
+        if (result != 0) {
+            downloadService.deleteFile(path);
+            return;
+        }
+        int total = decoder.getFrameCount();
+        if (total < 5) {
+            return;
+        }
+        String outPath = downloadService.getRandomPath() + ".gif";
+        OutputStream out;
+        AnimatedGifEncoder encoder = new AnimatedGifEncoder();
+        try {
+            out = new FileOutputStream(outPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            messageChain = messageChain.plus("读取gif出错");
+            messageEvent.getSubject().sendMessage(messageChain);
+            downloadService.deleteFile(path);
+            return;
+        }
+        encoder.start(out);
+        encoder.setRepeat(decoder.getLoopCount());
+
+        for (int i = total - 1; i >= 0; i--) {
+            encoder.setDelay(decoder.getDelay(i));
+            encoder.addFrame(decoder.getFrame(i));
+        }
+        encoder.finish();
+        try {
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            messageChain = messageChain.plus("读取gif出错");
+            messageEvent.getSubject().sendMessage(messageChain);
+            downloadService.deleteFile(path);
+            downloadService.deleteFile(outPath);
+            return;
+        }
+        net.mamoe.mirai.message.data.Image image = imageService.uploadImage(outPath, messageEvent);
+        MessageChain imageMessage = imageService.parseMsgChainByImg(image);
+        messageChain = messageChain.plus(imageMessage);
+        downloadService.deleteFile(path);
+        downloadService.deleteFile(outPath);
+        messageEvent.getSubject().sendMessage(messageChain);
     }
+
+    public void fastGIF(MessageEvent messageEvent) {
+        MessageChain messageChain = MessageUtils.newChain();
+        net.mamoe.mirai.message.data.Image outImage = messageEvent.getMessage().get(net.mamoe.mirai.message.data.Image.Key);
+        if (outImage == null) {
+            return;
+        }
+        String path = downloadService.getRandomPath() + ".gif";
+        downloadService.download(net.mamoe.mirai.message.data.Image.queryUrl(outImage), path);
+
+        GifDecoder decoder = new GifDecoder();
+        int result = decoder.read(path);
+        if (result != 0) {
+            downloadService.deleteFile(path);
+            return;
+        }
+        int total = decoder.getFrameCount();
+        String outPath = downloadService.getRandomPath() + ".gif";
+        OutputStream out;
+        AnimatedGifEncoder encoder = new AnimatedGifEncoder();
+        try {
+            out = new FileOutputStream(outPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            messageChain = messageChain.plus("读取gif出错");
+            messageEvent.getSubject().sendMessage(messageChain);
+            downloadService.deleteFile(path);
+            return;
+        }
+        encoder.start(out);
+        encoder.setRepeat(decoder.getLoopCount());
+
+        for (int i = 0; i <= total - 1; i++) {
+            encoder.setDelay(decoder.getDelay(i) / 2);
+            encoder.addFrame(decoder.getFrame(i));
+        }
+        encoder.finish();
+        try {
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            messageChain = messageChain.plus("读取gif出错");
+            messageEvent.getSubject().sendMessage(messageChain);
+            downloadService.deleteFile(path);
+            downloadService.deleteFile(outPath);
+            return;
+        }
+        net.mamoe.mirai.message.data.Image image = imageService.uploadImage(outPath, messageEvent);
+        MessageChain imageMessage = imageService.parseMsgChainByImg(image);
+        messageChain = messageChain.plus(imageMessage);
+        downloadService.deleteFile(path);
+        downloadService.deleteFile(outPath);
+        messageEvent.getSubject().sendMessage(messageChain);
+    }
+
 }

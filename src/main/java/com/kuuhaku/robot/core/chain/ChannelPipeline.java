@@ -6,6 +6,7 @@ import com.kuuhaku.robot.common.constant.HandlerMatchType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -51,6 +52,7 @@ public class ChannelPipeline {
                 // 查询标记有Handler注解的方法，并取出其值
                 // 使用aop代理后无法使用method.getAnnotation()获取注解，改用工具类获取
                 Handler handler = AnnotationUtils.findAnnotation(method, Handler.class);
+                Environment environment = context.getEnvironment();
                 if (handler != null) {
                     if (method.getParameterCount() != 1) {
                         log.error("参数格式不对，应为1个");
@@ -61,22 +63,28 @@ public class ChannelPipeline {
                         throw new RuntimeException();
                     }
                     String[] values = handler.values();
+                    for (int i = 0; i < values.length; i++) {
+                        String v = environment.resolvePlaceholders(values[i]);
+                        if (!v.equals(values[i])) {
+                            log.info("replace annotation value, old=[{}], new=[{}]", values[i], v);
+                            values[i] = v;
+                        }
+                    }
                     int[] types = handler.types();
                     if (values.length != types.length) {
                         log.error("注册指令时出错，请检查指令值与类型数量是否匹配");
                         throw new RuntimeException();
                     }
                     for (int i = 0; i < values.length; i++) {
-                        ServiceMethod serviceMethod = new ServiceMethod(beanObj, method, handler.order());
+                        ServiceMethod serviceMethod = new ServiceMethod(beanObj, method, handler.order(), handler.description());
                         log.info("初始化handler,关键字=[{}],类型=[{}]，order=[{}]", values[i], types[i], handler.order());
                         switch (types[i]) {
-                            case HandlerMatchType.COMPLETE :
-                            case HandlerMatchType.CONTAINS :
-                            case HandlerMatchType.START :
-                            case HandlerMatchType.END : channelGroup.add(new CommandChannel(values[i], serviceMethod, types[i]));break;
-                            case HandlerMatchType.ALL : allExecuteChannel.add(new ExecuteChannel("all", serviceMethod));break;
-                            default: log.error("注册指令时出错，请检查指令类型是否合法");
+                            case HandlerMatchType.COMPLETE, HandlerMatchType.CONTAINS, HandlerMatchType.START, HandlerMatchType.END -> channelGroup.add(new CommandChannel(values[i], serviceMethod, types[i]));
+                            case HandlerMatchType.ALL -> allExecuteChannel.add(new ExecuteChannel("all", serviceMethod));
+                            default -> {
+                                log.error("注册指令时出错，请检查指令类型是否合法");
                                 throw new RuntimeException();
+                            }
                         }
                     }
                 }
@@ -128,12 +136,12 @@ public class ChannelPipeline {
         return list;
     }
 
-    public List<String> commandList() {
-        List<String> list = new ArrayList<>(channelGroup.size());
+    public Map<String, String> commandMap() {
+        Map<String, String> map = new HashMap<>(channelGroup.size());
         for (Channel channel : channelGroup) {
-            list.add(channel.id());
+            map.put(channel.id(), channel.description());
         }
-        return list;
+        return map;
     }
 
 }
