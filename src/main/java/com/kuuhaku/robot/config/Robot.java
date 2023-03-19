@@ -28,9 +28,12 @@ import java.util.concurrent.Executors;
 @Slf4j
 @Component
 public class Robot {
+    /**
+     * 保存登录设备信息，第一次随机启动之后启动便使用该信息，否则每次都得验证
+     */
+    private static final String DEVICE_INFO = "deviceInfo.json";
     private final Bot bot;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
-
     @Autowired
     private MessageEvents messageEvents;
     @Autowired
@@ -47,10 +50,6 @@ public class Robot {
     private CommandService commandService;
     @Autowired
     private ApplicationContext context;
-    /**
-     * 保存登录设备信息，第一次随机启动之后启动便使用该信息，否则每次都得验证
-     */
-    private static final String DEVICE_INFO = "deviceInfo.json";
 
     Robot(@Value("${robot.account}") long account, @Value("${robot.password}") String password) {
         this.bot = BotFactory.INSTANCE.newBot(account, password, new BotConfiguration() {{

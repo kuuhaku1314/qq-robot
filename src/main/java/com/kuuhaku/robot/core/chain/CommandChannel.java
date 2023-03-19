@@ -19,6 +19,12 @@ public class CommandChannel implements Channel {
 
     private final int type;
 
+    public CommandChannel(String id, ServiceMethod serviceMethod, int type) {
+        this.id = id;
+        this.serviceMethod = serviceMethod;
+        this.type = type;
+    }
+
     @Override
     public boolean execute(ChannelContext context) {
         Command command = context.command();
@@ -54,12 +60,6 @@ public class CommandChannel implements Channel {
 
     public int type() {
         return type;
-    }
-
-    public CommandChannel(String id, ServiceMethod serviceMethod, int type) {
-        this.id = id;
-        this.serviceMethod = serviceMethod;
-        this.type = type;
     }
 
     private boolean isMatch(String msg) {

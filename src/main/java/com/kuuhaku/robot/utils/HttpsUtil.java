@@ -21,21 +21,6 @@ public class HttpsUtil {
     private static final int CONNECT_TIME_OUT = 10000;
     private static final int READ_TIME_OUT = 15000;
 
-    private static final class DefaultTrustManager implements X509TrustManager {
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
-    }
-
     /**
      * get请求方法列表
      */
@@ -52,7 +37,6 @@ public class HttpsUtil {
         return getBytesFromStream(httpsConn.getInputStream());
     }
 
-
     /**
      * post请求方法列表
      */
@@ -68,7 +52,6 @@ public class HttpsUtil {
         setBytesToStream(httpsConn.getOutputStream(), data.getBytes());
         return getBytesFromStream(httpsConn.getInputStream());
     }
-
 
     /**
      * 获取Https链接
@@ -157,7 +140,6 @@ public class HttpsUtil {
         bais.close();
     }
 
-
     //获取SSLSocketFactory
     //SSLSocket通信 应该是种协议吧
     public static SSLSocketFactory getSSLSocketFactory() {
@@ -223,5 +205,20 @@ public class HttpsUtil {
             httpsConn.setRequestProperty(key, header.get(key));
         }
 
+    }
+
+    private static final class DefaultTrustManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
     }
 }

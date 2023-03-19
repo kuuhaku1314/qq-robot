@@ -16,6 +16,8 @@ import java.util.List;
  */
 @Component
 public class ImageApiFactory {
+    private static int size;
+    private final List<CommonImageApi> list = new ArrayList<>();
     @Autowired
     @Qualifier("apiOne")
     private ApiOne apiOne;
@@ -34,8 +36,6 @@ public class ImageApiFactory {
     @Autowired
     @Qualifier("apiSix")
     private ApiSix apiSix;
-    private final List<CommonImageApi> list = new ArrayList<>();
-    private static int size;
 
     @PostConstruct
     public void init() {

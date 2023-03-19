@@ -7,7 +7,6 @@ package com.kuuhaku.robot.entity.othello;
  */
 
 public class MachineStep {
-    final int INF = 0x3f3f3f3f;
     static final int[][] valueMap = {{500, -25, 10, 5, 5, 10, -25, 500},
             {-25, -45, 1, 1, 1, 1, -45, -25},
             {10, 1, 3, 2, 2, 3, 1, 10},
@@ -16,6 +15,7 @@ public class MachineStep {
             {10, 1, 3, 2, 2, 3, 1, 10},
             {-25, -45, 1, 1, 1, 1, -45, -25},
             {500, -25, 10, 5, 5, 10, -25, 500}};
+    final int INF = 0x3f3f3f3f;
     int maxDepth;
     int color;
     int n;
@@ -163,7 +163,7 @@ public class MachineStep {
     public int[][] nextBoard(int[][] board, int x, int y, int type) {
         int n = 1;
         int color = type;
-        int state[][] = new int[10][10];
+        int[][] state = new int[10][10];
         for (int i = 0; i <= 9; i++) {
             state[0][i] = 2;
             state[i][0] = 2;
@@ -175,8 +175,8 @@ public class MachineStep {
                 state[i][j] = board[i][j];
             }
         }
-        int fx[] = {-1, 1, 0, 0, -1, -1, 1, 1};
-        int fy[] = {0, 0, -1, 1, -1, 1, -1, 1};
+        int[] fx = {-1, 1, 0, 0, -1, -1, 1, 1};
+        int[] fy = {0, 0, -1, 1, -1, 1, -1, 1};
         while (n-- > 0) {
             boolean flag = false;
             for (int i = 0; i <= 7; i++) {

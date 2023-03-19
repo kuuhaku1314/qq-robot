@@ -27,21 +27,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class RecordService {
 
+    public static final String VOICE_KEY = "[mirai:voice]";
+    private static final int MAX_SIZE = 10000;
+    @Value("${robot.temp.path}")
+    public String voicePath;
     @Autowired
     private DownloadService downloadService;
-
     /**
      * key:groupId:messageIds
      */
     private Map<String, String> map = new ConcurrentHashMap<>();
-
-    private static final int MAX_SIZE = 10000;
-
-    @Value("${robot.temp.path}")
-    public String voicePath;
-
-    public static final String VOICE_KEY = "[mirai:voice]";
-
     @Autowired
     private VoiceService voiceService;
 

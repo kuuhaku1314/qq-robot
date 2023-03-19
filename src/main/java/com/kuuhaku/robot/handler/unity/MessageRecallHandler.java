@@ -79,7 +79,7 @@ public class MessageRecallHandler {
     }
 
     private String intsToString(int[] ints) {
-        StringBuilder stringBuilder = new StringBuilder("");
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i : ints) {
             stringBuilder.append(i);
         }

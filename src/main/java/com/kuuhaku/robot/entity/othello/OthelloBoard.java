@@ -53,6 +53,55 @@ public class OthelloBoard {
         return othelloBoard;
     }
 
+    public static void main(String[] args) {
+        OthelloBoard othelloBoard = OthelloBoard.instant();
+        List<ChessOperation> chessOperations = new ArrayList<>();
+        String bId = "123";
+        String wId = "456";
+        int length = 8;
+        boolean bFlag = false;
+        String infos = "F5 D6 C3 D3 C4 F4 F6 G5 E3 F3 E6 F7 H5 C6 G4 G3 G6 H4 F2 E2 C5 D7 H3 B3 B4 D2 D1 B6 B5 C2 E1 A3 C1 A4 F8 G1 F1 B1 B2 A1 A2 H2 C7 C8 H1 G2 D8 E8 E7 G8 A6 A5 A7 A8 B8 B7 H8 G7 H7 H6";
+        String[] strings = infos.split(" ");
+        for (String string : strings) {
+            // 注意入参转换，棋局内坐标系在xy坐标系第一象限
+            int x = string.getBytes(StandardCharsets.UTF_8)[0] - 'A';
+            int y = length - (string.getBytes(StandardCharsets.UTF_8)[1] - '0');
+            String user = bFlag ? bId : wId;
+            chessOperations.add(new ChessOperation(OthelloConstant.OPERATE_MESSAGE, x, y, user));
+            bFlag = !bFlag;
+        }
+        ChessChannel chessChannel = othelloBoard.start(bId, "空白", wId, "咸鱼", OthelloConstant.WHITE, 2);
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    String msg = chessChannel.take();
+                    if (!msg.equals(OthelloConstant.END_MESSAGE)) {
+                        System.out.println(msg);
+                    } else {
+                        System.out.println("对局结束");
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+        });
+        thread.start();
+        // 要使用下面这段代码，得将ai Num设置为0
+        /*for (ChessOperation operation : chessOperations) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                chessChannel.close();
+                thread.interrupt();
+                return;
+            }
+            chessChannel.add(operation);
+        }*/
+    }
+
     /**
      * 初始化
      *
@@ -250,7 +299,6 @@ public class OthelloBoard {
         }
     }
 
-
     private int eatChess(int x, int y, int curChessColor, boolean trueDo) {
         int totalEatChessNum = 0;
         BoardVisitor boardVisitor = new BoardVisitor(othelloBoard, new Point(x, y));
@@ -378,71 +426,13 @@ public class OthelloBoard {
         return endMsg;
     }
 
-
-    // 内部类定时器
-    @AllArgsConstructor
-    private class Timer extends Thread {
-        private int curTurn;
-        private String username;
-
-        @Override
-        public void run() {
-            try {
-                Thread.sleep(timeout);
-                // 回合数变更或者结束了，说明下了直接返回
-                if (OthelloBoard.this.curTurn > curTurn || OthelloBoard.this.boardStatus == OthelloConstant.BOARD_STATUS_OVER) {
-                    return;
-                }
-                ReentrantLock lock = OthelloBoard.this.lock;
-                lock.lock();
-                // 获取锁后double check
-                if (OthelloBoard.this.curTurn > curTurn || OthelloBoard.this.boardStatus == OthelloConstant.BOARD_STATUS_OVER) {
-                    lock.unlock();
-                    return;
-                }
-                OthelloBoard.this.produceQueue.add("[" + username + "]超过" + timeout / 1000 + "秒没有下子已超时，系统将自动下子");
-                // 找一个可以下子的地方下，遍历，选最大一个
-                int maxX = 0, maxY = 0, maxValue = 0;
-                for (int i = 0; i < OthelloBoard.LENGTH; i++) {
-                    for (int j = 0; j < OthelloBoard.LENGTH; j++) {
-                        // 空格可以落子
-                        if (othelloBoard[j][i] == OthelloConstant.BLANK) {
-                            // 可以吃子，投递一个消息
-                            int eatChessNum = OthelloBoard.this.eatChess(i, j, OthelloBoard.this.curChessColor, false);
-                            if (eatChessNum > maxValue) {
-                                maxX = i;
-                                maxY = j;
-                                maxValue = eatChessNum;
-                            }
-                        }
-                    }
-                }
-                String user = OthelloBoard.this.blackUserID;
-                if (OthelloBoard.this.curChessColor != OthelloConstant.BLACK) {
-                    user = OthelloBoard.this.whiteUserID;
-                }
-                if (maxValue > 0) {
-                    ChessOperation chessOperation = new ChessOperation(OthelloConstant.OPERATE_MESSAGE, maxX, maxY, user);
-                    OthelloBoard.this.consumerQueue.add(chessOperation);
-                    lock.unlock();
-                    return;
-                }
-                // 理论上不存在这种情况
-                lock.unlock();
-                throw new RuntimeException("timer abnormal");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     @Getter
     private static class BoardVisitor {
         private final int[][] othelloBoard;
         private final Point initPoint;
-        private Point curPoint;
         private final int xLength;
         private final int yLength;
+        private Point curPoint;
 
         BoardVisitor(int[][] othelloBoard, Point initPoint) {
             this.othelloBoard = othelloBoard;
@@ -510,6 +500,63 @@ public class OthelloBoard {
         private Point point;
     }
 
+    // 内部类定时器
+    @AllArgsConstructor
+    private class Timer extends Thread {
+        private int curTurn;
+        private String username;
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(timeout);
+                // 回合数变更或者结束了，说明下了直接返回
+                if (OthelloBoard.this.curTurn > curTurn || OthelloBoard.this.boardStatus == OthelloConstant.BOARD_STATUS_OVER) {
+                    return;
+                }
+                ReentrantLock lock = OthelloBoard.this.lock;
+                lock.lock();
+                // 获取锁后double check
+                if (OthelloBoard.this.curTurn > curTurn || OthelloBoard.this.boardStatus == OthelloConstant.BOARD_STATUS_OVER) {
+                    lock.unlock();
+                    return;
+                }
+                OthelloBoard.this.produceQueue.add("[" + username + "]超过" + timeout / 1000 + "秒没有下子已超时，系统将自动下子");
+                // 找一个可以下子的地方下，遍历，选最大一个
+                int maxX = 0, maxY = 0, maxValue = 0;
+                for (int i = 0; i < OthelloBoard.LENGTH; i++) {
+                    for (int j = 0; j < OthelloBoard.LENGTH; j++) {
+                        // 空格可以落子
+                        if (othelloBoard[j][i] == OthelloConstant.BLANK) {
+                            // 可以吃子，投递一个消息
+                            int eatChessNum = OthelloBoard.this.eatChess(i, j, OthelloBoard.this.curChessColor, false);
+                            if (eatChessNum > maxValue) {
+                                maxX = i;
+                                maxY = j;
+                                maxValue = eatChessNum;
+                            }
+                        }
+                    }
+                }
+                String user = OthelloBoard.this.blackUserID;
+                if (OthelloBoard.this.curChessColor != OthelloConstant.BLACK) {
+                    user = OthelloBoard.this.whiteUserID;
+                }
+                if (maxValue > 0) {
+                    ChessOperation chessOperation = new ChessOperation(OthelloConstant.OPERATE_MESSAGE, maxX, maxY, user);
+                    OthelloBoard.this.consumerQueue.add(chessOperation);
+                    lock.unlock();
+                    return;
+                }
+                // 理论上不存在这种情况
+                lock.unlock();
+                throw new RuntimeException("timer abnormal");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @AllArgsConstructor
     private class BoardAI {
         int searchDepth;
@@ -570,55 +617,6 @@ public class OthelloBoard {
             int[] ints = machineStep.nextStep(board, color);
             return new Point(ints[0] - 1, ints[1] - 1);
         }
-    }
-
-    public static void main(String[] args) {
-        OthelloBoard othelloBoard = OthelloBoard.instant();
-        List<ChessOperation> chessOperations = new ArrayList<>();
-        String bId = "123";
-        String wId = "456";
-        int length = 8;
-        boolean bFlag = false;
-        String infos = "F5 D6 C3 D3 C4 F4 F6 G5 E3 F3 E6 F7 H5 C6 G4 G3 G6 H4 F2 E2 C5 D7 H3 B3 B4 D2 D1 B6 B5 C2 E1 A3 C1 A4 F8 G1 F1 B1 B2 A1 A2 H2 C7 C8 H1 G2 D8 E8 E7 G8 A6 A5 A7 A8 B8 B7 H8 G7 H7 H6";
-        String[] strings = infos.split(" ");
-        for (String string : strings) {
-            // 注意入参转换，棋局内坐标系在xy坐标系第一象限
-            int x = string.getBytes(StandardCharsets.UTF_8)[0] - 'A';
-            int y = length - (string.getBytes(StandardCharsets.UTF_8)[1] - '0');
-            String user = bFlag ? bId : wId;
-            chessOperations.add(new ChessOperation(OthelloConstant.OPERATE_MESSAGE, x, y, user));
-            bFlag = !bFlag;
-        }
-        ChessChannel chessChannel = othelloBoard.start(bId, "空白", wId, "咸鱼", OthelloConstant.WHITE, 2);
-        Thread thread = new Thread(() -> {
-            while (true) {
-                try {
-                    String msg = chessChannel.take();
-                    if (!msg.equals(OthelloConstant.END_MESSAGE)) {
-                        System.out.println(msg);
-                    } else {
-                        System.out.println("对局结束");
-                        return;
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return;
-                }
-            }
-        });
-        thread.start();
-        // 要使用下面这段代码，得将ai Num设置为0
-        /*for (ChessOperation operation : chessOperations) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                chessChannel.close();
-                thread.interrupt();
-                return;
-            }
-            chessChannel.add(operation);
-        }*/
     }
 }
 

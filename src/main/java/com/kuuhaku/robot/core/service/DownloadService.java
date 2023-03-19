@@ -25,87 +25,11 @@ import java.util.UUID;
  */
 @Service
 public class DownloadService {
+    private final String schema = "https";
     @Value("${robot.temp.path}")
     private String basePath;
     @Autowired
     private ProxyConfig proxyConfig;
-
-    private final String schema = "https";
-
-    /**
-     * 下载文件
-     *
-     * @param urlStr 文件url
-     * @param path   本地路径
-     */
-    public void download(String urlStr, String path) {
-        //类型根据创建连接
-        download(urlStr, path, false);
-    }
-
-    public void download(String urlStr, String path, boolean userProxy) {
-        //类型根据创建连接
-        HttpURLConnection conn = null;
-        Proxy proxy = new Proxy(proxyConfig.getProtocol(), new InetSocketAddress(proxyConfig.getHost(), proxyConfig.getPort()));
-        try {
-            if (urlStr.startsWith(schema)) {
-                if (userProxy) {
-                    conn = HttpsUtil.getHttpsURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET, proxy);
-                } else {
-                    conn = HttpsUtil.getHttpsURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET);
-                }
-            } else {
-                if (userProxy) {
-                    conn = HttpUtil.getHttpURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET, proxy);
-                } else {
-                    conn = HttpUtil.getHttpURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET, null);
-                }
-            }
-            InputStream inStream = conn.getInputStream();
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len = 0;
-            while ((len = inStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, len);
-            }
-            inStream.close();
-            //把信息存下来，写入内存
-            byte[] data = outStream.toByteArray();
-            FileOutputStream fileOutputStream = new FileOutputStream(path);
-            fileOutputStream.write(data);
-            fileOutputStream.flush();
-            fileOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 分配随机路径，无后缀
-     *
-     * @return 无后缀随机文件路径
-     */
-    public String getRandomPath() {
-        return basePath + UUID.randomUUID();
-    }
-
-    /**
-     * 分配随机路径
-     *
-     * @return 带png后缀随机文件路径
-     */
-    public String getRandomPngPath() {
-        return getRandomPath() + ".png";
-    }
-
-    /**
-     * 删除指定文件
-     *
-     * @param path 文件路径
-     */
-    public void deleteFile(String path) {
-        new File(path).delete();
-    }
 
     /**
      * 获取目录下图片
@@ -193,5 +117,80 @@ public class DownloadService {
             }
         }
         return files;
+    }
+
+    /**
+     * 下载文件
+     *
+     * @param urlStr 文件url
+     * @param path   本地路径
+     */
+    public void download(String urlStr, String path) {
+        //类型根据创建连接
+        download(urlStr, path, false);
+    }
+
+    public void download(String urlStr, String path, boolean userProxy) {
+        //类型根据创建连接
+        HttpURLConnection conn = null;
+        Proxy proxy = new Proxy(proxyConfig.getProtocol(), new InetSocketAddress(proxyConfig.getHost(), proxyConfig.getPort()));
+        try {
+            if (urlStr.startsWith(schema)) {
+                if (userProxy) {
+                    conn = HttpsUtil.getHttpsURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET, proxy);
+                } else {
+                    conn = HttpsUtil.getHttpsURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET);
+                }
+            } else {
+                if (userProxy) {
+                    conn = HttpUtil.getHttpURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET, proxy);
+                } else {
+                    conn = HttpUtil.getHttpURLConnection(urlStr, HttpUtil.REQUEST_METHOD_GET, null);
+                }
+            }
+            InputStream inStream = conn.getInputStream();
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len = 0;
+            while ((len = inStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, len);
+            }
+            inStream.close();
+            //把信息存下来，写入内存
+            byte[] data = outStream.toByteArray();
+            FileOutputStream fileOutputStream = new FileOutputStream(path);
+            fileOutputStream.write(data);
+            fileOutputStream.flush();
+            fileOutputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 分配随机路径，无后缀
+     *
+     * @return 无后缀随机文件路径
+     */
+    public String getRandomPath() {
+        return basePath + UUID.randomUUID();
+    }
+
+    /**
+     * 分配随机路径
+     *
+     * @return 带png后缀随机文件路径
+     */
+    public String getRandomPngPath() {
+        return getRandomPath() + ".png";
+    }
+
+    /**
+     * 删除指定文件
+     *
+     * @param path 文件路径
+     */
+    public void deleteFile(String path) {
+        new File(path).delete();
     }
 }

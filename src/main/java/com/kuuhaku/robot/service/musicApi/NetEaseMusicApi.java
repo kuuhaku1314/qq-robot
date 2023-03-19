@@ -30,6 +30,10 @@ public class NetEaseMusicApi {
     @Value("${robot.music.cookie}")
     private String cookie;
 
+    public static void main(String[] args) {
+        new NetEaseMusicApi().getNetEaseMusicPage("雪恋少女");
+    }
+
     public List<NetEaseMusic> getNetEaseMusicPage(String musicName) {
         String jsonStr = null;
         List<NetEaseMusic> list = new ArrayList<>();
@@ -100,9 +104,5 @@ public class NetEaseMusicApi {
 
     public String getMusicUrl(NetEaseMusic netEaseMusic) {
         return "http://music.163.com/song/media/outer/url?id=" + netEaseMusic.getId() + ".mp3";
-    }
-
-    public static void main(String[] args) {
-        new NetEaseMusicApi().getNetEaseMusicPage("雪恋少女");
     }
 }

@@ -30,7 +30,7 @@ public class Application {
         var context = app.run(args);
 
         // 利用反射修改灯神sdk包的client设置代理，可以直接的不需要下面这两句
-        ProxyConfig proxyConfig =  context.getBean(ProxyConfig.class);
+        ProxyConfig proxyConfig = context.getBean(ProxyConfig.class);
         UnirestInstanceUtil.HookUnirestInstance(proxyConfig.getHost(), proxyConfig.getPort());
 
         var robot = context.getBean(Robot.class);

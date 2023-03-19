@@ -33,12 +33,8 @@ import java.util.Random;
 @Slf4j
 public class PetPetService {
 
-    @Value("${robot.pet.path}")
-    private String petPetPath;
-    @Value("${robot.pa.path}")
-    private String paPath;
-    @Value("${robot.diu.path}")
-    private String diuPath;
+    public final static int WHITE = 0x00ffffff;
+    public final static int ALPHA = 0x00ffffff;
     /**
      * 每帧头像的宽度
      */
@@ -59,13 +55,17 @@ public class PetPetService {
      * 生成gif像素
      */
     public static int imgSize = 114 * 5;
-    public final static int WHITE = 0x00ffffff;
-    public final static int ALPHA = 0x00ffffff;
     /**
      * 爬图片路径
      */
     public static ArrayList<String> list = new ArrayList<>();
     public static ArrayList<BufferedImage> imageList = new ArrayList<>();
+    @Value("${robot.pet.path}")
+    private String petPetPath;
+    @Value("${robot.pa.path}")
+    private String paPath;
+    @Value("${robot.diu.path}")
+    private String diuPath;
     @Autowired
     private DownloadService downloadService;
     @Autowired

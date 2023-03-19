@@ -19,6 +19,11 @@ import java.util.Set;
 @Slf4j
 @Primary
 public class ApiSix implements CommonImageApi {
+    public static void main(String[] args) {
+        ApiSix apiSix = new ApiSix();
+        apiSix.getDownloadUri();
+    }
+
     @Override
     public String getDownloadUri() {
         try {
@@ -38,10 +43,5 @@ public class ApiSix implements CommonImageApi {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public static void main(String[] args) {
-        ApiSix apiSix = new ApiSix();
-        apiSix.getDownloadUri();
     }
 }

@@ -4,11 +4,11 @@ import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.utils.*
 import java.time.*
 
-public object FixProtocolVersion {
+object FixProtocolVersion {
 
     @JvmStatic
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    public fun update() {
+    fun update() {
         MiraiProtocolInternal.protocols[BotConfiguration.MiraiProtocol.ANDROID_PHONE] = MiraiProtocolInternal(
             apkId = "com.tencent.mobileqq",
             id = 537151682,
@@ -61,7 +61,7 @@ public object FixProtocolVersion {
 
     @JvmStatic
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    public fun info(): Map<BotConfiguration.MiraiProtocol, String> {
+    fun info(): Map<BotConfiguration.MiraiProtocol, String> {
         return MiraiProtocolInternal.protocols.mapValues { (protocol, info) ->
             val version = info.ver
             val datetime = OffsetDateTime.ofInstant(Instant.ofEpochSecond(info.buildTime), ZoneId.systemDefault())

@@ -49,6 +49,13 @@ import java.util.concurrent.locks.ReentrantLock;
 @HandlerComponent
 @Slf4j
 public class RepeatHandler {
+    private static final ReentrantLock chatLock = new ReentrantLock();
+    private static final ConcurrentHashMap<String, ImmutablePair<ReentrantLock, List<Message>>> messagesMap = new ConcurrentHashMap<>();
+    private static boolean sendGIF = true;
+    @Value("${robot.openai.host}")
+    public String openAIHost;
+    @Value("${robot.openai.api.key}")
+    public String openAIApiKey;
     @Autowired
     private RepeatService repeatService;
     @Autowired
@@ -63,14 +70,7 @@ public class RepeatHandler {
     private PetPetHandler petPetHandler;
     @Autowired
     private ProxyConfig proxyConfig;
-    @Value("${robot.openai.host}")
-    public String openAIHost;
-    @Value("${robot.openai.api.key}")
-    public String openAIApiKey;
     private OpenAiClient openAiClient;
-    private static boolean sendGIF = true;
-    private static final ReentrantLock chatLock = new ReentrantLock();
-    private static final ConcurrentHashMap<String, ImmutablePair<ReentrantLock, List<Message>>> messagesMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {

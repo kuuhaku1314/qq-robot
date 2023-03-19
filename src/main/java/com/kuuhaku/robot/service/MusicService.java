@@ -15,7 +15,6 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -30,13 +29,11 @@ import java.util.List;
 @Service
 @Slf4j
 public class MusicService {
+    private final int maxTrackLength = 300;
     @Autowired
     private DownloadService downloadService;
-
     @Autowired
     private NetEaseMusicApi netEaseMusicApi;
-
-    private final int maxTrackLength = 300;
 
     public List<NetEaseMusic> getMusicList(String musicName) {
         return netEaseMusicApi.getNetEaseMusicPage(musicName);

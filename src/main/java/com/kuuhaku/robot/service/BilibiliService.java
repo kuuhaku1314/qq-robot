@@ -45,25 +45,15 @@ import java.util.regex.Pattern;
 @Service
 @Slf4j
 public class BilibiliService {
-    @Autowired
-    private ImageService imageService;
-    @Autowired
-    private DownloadService downloadService;
-    @Autowired
-    private Robot robot;
-    @Autowired
-    private TaskService taskService;
-
+    private static final Map<Long, Set<Long>> uidMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Set<Long>> pushGroups = new ConcurrentHashMap<>();
+    private static final Map<Long, String> nameMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Set<Long>> newAddGroup = new ConcurrentHashMap<>();
+    private static final Set<Long> pullUidSet = new CopyOnWriteArraySet<>();
     public final int corePoolSize = 2;
-
     public final int maximumPoolSize = 2;
-
     public final long keepAlive = 180;
-
     public final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(100);
-
-    private final BlockingQueue<DynamicPush> messageQueue = new LinkedBlockingQueue<>();
-
     public final ThreadFactory threadFactory = new ThreadFactory() {
         private final AtomicInteger count = new AtomicInteger(0);
 
@@ -74,25 +64,33 @@ public class BilibiliService {
             return new Thread(r);
         }
     };
-
+    private final BlockingQueue<DynamicPush> messageQueue = new LinkedBlockingQueue<>();
     private final ThreadPoolExecutor executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAlive, TimeUnit.SECONDS, queue, threadFactory);
-
-    private static final Map<Long, Set<Long>> uidMap = new ConcurrentHashMap<>();
-
-    private static final Map<Long, Set<Long>> pushGroups = new ConcurrentHashMap<>();
-
-    private static final Map<Long, String> nameMap = new ConcurrentHashMap<>();
-
-    private static final Map<Long, Set<Long>> newAddGroup = new ConcurrentHashMap<>();
-
-    private static final Set<Long> pullUidSet = new CopyOnWriteArraySet<>();
-
     private final DynamicFactory dynamicFactory = new DynamicFactory();
-
     private final String dumpPath = "src\\main\\resources\\dump\\dump_uid_gid.txt";
     private final String backDumpPath = "src\\main\\resources\\dump\\dump_uid_gid_back.txt";
-
     private final Pattern filter = Pattern.compile("\\[.*?_.*?]");
+    @Autowired
+    private ImageService imageService;
+    @Autowired
+    private DownloadService downloadService;
+    @Autowired
+    private Robot robot;
+    @Autowired
+    private TaskService taskService;
+
+    public static void main(String[] args) {
+        System.out.println(new BilibiliService().filter.matcher("雫るる_Official转发动态啦!\n" +
+                "坏了，分母多了\n" +
+                "发布于:2022-06-10 20:12:26\n" +
+                "\n" +
+                "原动态如下:\n" +
+                "@雫るる_Official 首先恭喜lu宝3周年快乐！[雫るる_爱][雫るる_爱][雫るる_爱] 虽然我才看你直播3天但是问题不大[雫るる_贴贴] 在你出道三周年之际我也给大伙来点福利！[雫るる_好耶][雫るる_好耶][雫るる_好耶]\n" +
+                "弹幕们不是老说富哥V50么 现在你们机会来了抽取50位幸运儿送出价值55的LULU永久装扮给你们! 如果在已经有了的情况下会折现成50RMB！ [雫るる_馋馋][雫るる_馋馋][雫るる_馋馋]\n" +
+                "重点来了！下面说下抽奖方式！！！关注@雫るる_Official拥有粉丝牌 转发并评论此动态便可参与本次抽奖！[雫るる_嚣张][雫るる_嚣张][雫るる_嚣张]\n" +
+                "截止日期2022.6.16日0时 开奖日期2020.6.16日 请在开奖期间打开关注列表，否则取消资格。 抽奖结果我自己审核，重度抽奖号将被取消资格。谢谢各位对LULU的支持！[雫るる_喜欢][雫るる_喜欢][雫るる_喜欢][雫るる_喜欢][雫るる_喜欢][雫るる_喜欢]\n" +
+                "当前回复人数:107").replaceAll(""));
+    }
 
     @PostConstruct
     void init() {
@@ -136,11 +134,9 @@ public class BilibiliService {
         return name;
     }
 
-
     public MessageChain toContent(Dynamic dynamic) {
         return dynamicFactory.getInstance(dynamic).toMsg();
     }
-
 
     public void removePushGroup(Long groupID, Long uid) {
         Set<Long> set = pushGroups.get(uid);
@@ -468,14 +464,34 @@ public class BilibiliService {
         return result;
     }
 
+    private MessageChain attachDynamicDisplay(DynamicDisplay display, MessageChain chain) {
+        if (display == null || display.getAdd_on_card_info() == null || display.getAdd_on_card_info().size() == 0) {
+            return chain;
+        }
+        AddOnCardInfo cardInfo = display.getAdd_on_card_info().get(0);
+        ReserveAttachCard attachCard = cardInfo.getReserve_attach_card();
+        if (attachCard == null) {
+            return chain;
+        }
+        chain = chain.plus("\n\n附带一张小卡片\n");
+        chain = chain.plus(attachCard.getTitle() + "\n");
+        if (attachCard.getDesc_first() != null) {
+            chain = chain.plus(attachCard.getDesc_first().getText() + "\n");
+        }
+        chain = chain.plus(attachCard.getDesc_second() + "\n" + "直播开始时间:");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        chain = chain.plus(sdf.format(new Date(attachCard.getLivePlanStartTime() * 1000L)));
+        return chain;
+    }
+
     abstract public class DynamicInstance {
         protected final Dynamic dynamic;
-
-        public abstract MessageChain toMsg();
 
         DynamicInstance(Dynamic dynamic) {
             this.dynamic = dynamic;
         }
+
+        public abstract MessageChain toMsg();
     }
 
     class DynamicFactory {
@@ -531,26 +547,6 @@ public class BilibiliService {
             }
             return attachDynamicDisplay(dynamic.getDisplay(), chain);
         }
-    }
-
-    private MessageChain attachDynamicDisplay(DynamicDisplay display, MessageChain chain) {
-        if (display == null || display.getAdd_on_card_info() == null || display.getAdd_on_card_info().size() == 0) {
-            return chain;
-        }
-        AddOnCardInfo cardInfo = display.getAdd_on_card_info().get(0);
-        ReserveAttachCard attachCard = cardInfo.getReserve_attach_card();
-        if (attachCard == null) {
-            return chain;
-        }
-        chain = chain.plus("\n\n附带一张小卡片\n");
-        chain = chain.plus(attachCard.getTitle() + "\n");
-        if (attachCard.getDesc_first() != null) {
-            chain = chain.plus(attachCard.getDesc_first().getText() + "\n");
-        }
-        chain = chain.plus(attachCard.getDesc_second() + "\n" + "直播开始时间:");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        chain = chain.plus(sdf.format(new Date(attachCard.getLivePlanStartTime() * 1000L)));
-        return chain;
     }
 
     class WordDynamic extends DynamicInstance {
@@ -794,18 +790,5 @@ public class BilibiliService {
             }
             return chain;
         }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new BilibiliService().filter.matcher("雫るる_Official转发动态啦!\n" +
-                "坏了，分母多了\n" +
-                "发布于:2022-06-10 20:12:26\n" +
-                "\n" +
-                "原动态如下:\n" +
-                "@雫るる_Official 首先恭喜lu宝3周年快乐！[雫るる_爱][雫るる_爱][雫るる_爱] 虽然我才看你直播3天但是问题不大[雫るる_贴贴] 在你出道三周年之际我也给大伙来点福利！[雫るる_好耶][雫るる_好耶][雫るる_好耶]\n" +
-                "弹幕们不是老说富哥V50么 现在你们机会来了抽取50位幸运儿送出价值55的LULU永久装扮给你们! 如果在已经有了的情况下会折现成50RMB！ [雫るる_馋馋][雫るる_馋馋][雫るる_馋馋]\n" +
-                "重点来了！下面说下抽奖方式！！！关注@雫るる_Official拥有粉丝牌 转发并评论此动态便可参与本次抽奖！[雫るる_嚣张][雫るる_嚣张][雫るる_嚣张]\n" +
-                "截止日期2022.6.16日0时 开奖日期2020.6.16日 请在开奖期间打开关注列表，否则取消资格。 抽奖结果我自己审核，重度抽奖号将被取消资格。谢谢各位对LULU的支持！[雫るる_喜欢][雫るる_喜欢][雫るる_喜欢][雫るる_喜欢][雫るる_喜欢][雫るる_喜欢]\n" +
-                "当前回复人数:107").replaceAll(""));
     }
 }

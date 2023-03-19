@@ -40,6 +40,8 @@ public class SendImageHandler {
     public static List<String> drawlotsPaths;
     public static Set<String> drawlotsSet = new HashSet<>();
     public static Set<String> tarotSet = new HashSet<>();
+    private final ConcurrentHashMap<Long, String> lockMap = new ConcurrentHashMap<>();
+    private final Map<String, String> tarotMap = new HashMap<>();
     @Value("${robot.drawlots.path}")
     public String drawlotsPath;
     @Value("${robot.tarot.path}")
@@ -56,8 +58,6 @@ public class SendImageHandler {
     private DownloadService downloadService;
     @Autowired
     private KumoService kumoService;
-    private final ConcurrentHashMap<Long, String> lockMap = new ConcurrentHashMap<>();
-    private final Map<String, String> tarotMap = new HashMap<>();
 
     @PostConstruct
     void init() {

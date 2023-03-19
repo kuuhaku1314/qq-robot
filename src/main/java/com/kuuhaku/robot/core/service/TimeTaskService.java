@@ -21,13 +21,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TimeTaskService {
 
+    public final int maxSize = 1000;
+    private final Map<String, ScheduledFuture<?>> futureMap = new ConcurrentHashMap<>();
     @Autowired
     @Qualifier("scheduledExecutor")
     private ScheduledThreadPoolExecutor executor;
-
-    private final Map<String, ScheduledFuture<?>> futureMap = new ConcurrentHashMap<>();
-
-    public final int maxSize = 1000;
 
     public synchronized void submitTask(Runnable task, String key, long delay, TimeUnit timeUnit) {
         checkMap(futureMap);

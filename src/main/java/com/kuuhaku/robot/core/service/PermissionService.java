@@ -33,7 +33,7 @@ public class PermissionService {
     private final Set<Long> exclusionGroup = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Value("${robot.master}")
-    private long master;
+    private Long master;
 
     @PostConstruct
     void init() {

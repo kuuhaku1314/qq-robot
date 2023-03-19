@@ -18,13 +18,10 @@ import java.util.*;
  */
 @Slf4j
 public class ChannelPipeline {
-    private final List<Channel> channelGroup = new ArrayList<>();
-
-    private final List<Channel> allExecuteChannel = new ArrayList<>();
-
-    private final List<Channel> excludeChannel = new ArrayList<>();
-
     private static ChannelPipeline pipeline;
+    private final List<Channel> channelGroup = new ArrayList<>();
+    private final List<Channel> allExecuteChannel = new ArrayList<>();
+    private final List<Channel> excludeChannel = new ArrayList<>();
 
     private ChannelPipeline(ApplicationContext context) {
         log.info("流水线初始化中");
@@ -73,6 +70,7 @@ public class ChannelPipeline {
                     int[] types = handler.types();
                     if (values.length != types.length) {
                         log.error("注册指令时出错，请检查指令值与类型数量是否匹配");
+                        log.error("values=[{}]", Arrays.toString(values));
                         throw new RuntimeException();
                     }
                     for (int i = 0; i < values.length; i++) {
