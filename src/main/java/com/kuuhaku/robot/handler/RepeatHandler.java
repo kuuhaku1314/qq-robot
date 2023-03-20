@@ -18,6 +18,7 @@ import com.unfbx.chatgpt.OpenAiClient;
 import com.unfbx.chatgpt.entity.chat.ChatChoice;
 import com.unfbx.chatgpt.entity.chat.ChatCompletionResponse;
 import com.unfbx.chatgpt.entity.chat.Message;
+import com.unfbx.chatgpt.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Mirai;
 import net.mamoe.mirai.contact.Group;
@@ -232,7 +233,7 @@ public class RepeatHandler {
                         ctx.group().sendMessage(audioService.ReadText(ctx, reply.getContent(), true));
                     }
                 } else if (chatChoice.getFinishReason().equals("length")) {
-                    ctx.group().sendMessage("对话过长，清理本次上下文，请重新开始，当前对话token:" + chatCompletionResponse.getUsage().toString());
+                    ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始，当前对话token:" + chatCompletionResponse.getUsage().toString());
                     lastMessages.clear();
                 } else {
                     ctx.group().sendMessage("异常返回,清理本次上下文");
@@ -240,6 +241,13 @@ public class RepeatHandler {
                 }
                 return;
             } catch (Exception e) {
+                if (e instanceof BaseException be) {
+                    if (be.getMessage().contains("This model's maximum context length is")) {
+                        ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始");
+                        lastMessages.clear();
+                        return;
+                    }
+                }
                 e.printStackTrace();
             } finally {
                 lock.unlock();
