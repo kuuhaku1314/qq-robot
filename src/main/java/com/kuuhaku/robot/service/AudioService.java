@@ -281,7 +281,7 @@ class MoeGoe {
         StringBuilder result = new StringBuilder();
         // 阻塞等待执行完毕
         long now = System.currentTimeMillis();
-        long deadline = now + 1000*1200;
+        long deadline = now + 1000*120;
         while (true) {
             if (reader.ready()) {
                 int length = reader.read(buffer);
