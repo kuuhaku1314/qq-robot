@@ -326,8 +326,6 @@ class MoeGoe {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            isDestroyed = true;
         }
         try {
             if (p != null) {
