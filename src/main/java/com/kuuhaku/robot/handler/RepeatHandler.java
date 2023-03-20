@@ -77,8 +77,8 @@ public class RepeatHandler {
     public void init() {
         OpenAiClient.Builder builder = OpenAiClient.builder()
                 .apiKey(openAIApiKey)
-                .connectTimeout(50)
-                .writeTimeout(50)
+                .connectTimeout(30)
+                .writeTimeout(30)
                 .readTimeout(50)
                 .apiHost(openAIHost);
         if (proxyConfig.getProtocol() != null) {
@@ -230,7 +230,7 @@ public class RepeatHandler {
                     if (useDoc) {
                         ctx.group().sendMessage(reply.getContent());
                     } else {
-                        ctx.group().sendMessage(audioService.ReadText(ctx, reply.getContent(), true));
+                        ctx.group().sendMessage(audioService.ReadTextV2(ctx, reply.getContent(), true));
                     }
                 } else if (chatChoice.getFinishReason().equals("length")) {
                     ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始，当前对话token:" + chatCompletionResponse.getUsage().toString());
