@@ -190,7 +190,6 @@ public class RepeatHandler {
             return;
         }
 
-        log.info("start invoke chat gpt api");
         boolean useDoc = false;
         msg = msg.trim();
         if (msg.equals("")) {
@@ -209,49 +208,52 @@ public class RepeatHandler {
         chatLock.unlock();
         ReentrantLock lock = pair.getLeft();
         List<Message> lastMessages = pair.getRight();
-        for (int i = 0; i < 6; i++) {
-            boolean locked = lock.tryLock();
-            if (!locked) {
-                ctx.group().sendMessage("正在进行中，请稍后");
-                log.info("get chat gpt api lock failed");
-                return;
-            }
-            try {
-                if (lastMessages.isEmpty()) {
-                    lastMessages.add(Message.builder().role(Message.Role.SYSTEM).content(msg).build());
-                }
-                lastMessages.add(Message.builder().role(Message.Role.USER).content(msg).build());
-                ChatCompletionResponse chatCompletionResponse = openAiClient.chatCompletion(lastMessages);
-                ChatChoice chatChoice = chatCompletionResponse.getChoices().get(0);
-                if (chatChoice.getFinishReason().equals("stop") || chatChoice.getFinishReason().equals("content_filter")) {
-                    Message reply = chatChoice.getMessage();
-                    log.info("chatGPT reply:{{}}", reply);
-                    lastMessages.add(reply);
-                    if (useDoc) {
-                        ctx.group().sendMessage(reply.getContent());
-                    } else {
-                        ctx.group().sendMessage(audioService.ReadTextV2(ctx, reply.getContent(), true));
+        boolean locked = lock.tryLock();
+        if (!locked) {
+            ctx.group().sendMessage("正在进行中，请稍后");
+            log.info("get chat gpt api lock failed");
+            return;
+        }
+        log.info("start invoke chat gpt api");
+        try {
+            for (int i = 0; i < 6; i++) {
+                try {
+                    if (lastMessages.isEmpty()) {
+                        lastMessages.add(Message.builder().role(Message.Role.SYSTEM).content(msg).build());
                     }
-                } else if (chatChoice.getFinishReason().equals("length")) {
-                    ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始，当前对话token:" + chatCompletionResponse.getUsage().toString());
-                    lastMessages.clear();
-                } else {
-                    ctx.group().sendMessage("异常返回,清理本次上下文");
-                    lastMessages.clear();
-                }
-                return;
-            } catch (Exception e) {
-                if (e instanceof BaseException be) {
-                    if (be.getMessage().contains("This model's maximum context length is")) {
-                        ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始");
+                    lastMessages.add(Message.builder().role(Message.Role.USER).content(msg).build());
+                    ChatCompletionResponse chatCompletionResponse = openAiClient.chatCompletion(lastMessages);
+                    ChatChoice chatChoice = chatCompletionResponse.getChoices().get(0);
+                    if (chatChoice.getFinishReason().equals("stop") || chatChoice.getFinishReason().equals("content_filter")) {
+                        Message reply = chatChoice.getMessage();
+                        log.info("chatGPT reply:{{}}", reply);
+                        lastMessages.add(reply);
+                        if (useDoc) {
+                            ctx.group().sendMessage(reply.getContent());
+                        } else {
+                            ctx.group().sendMessage(audioService.ReadTextV2(ctx, reply.getContent(), true));
+                        }
+                    } else if (chatChoice.getFinishReason().equals("length")) {
+                        ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始，当前对话token:" + chatCompletionResponse.getUsage().toString());
                         lastMessages.clear();
-                        return;
+                    } else {
+                        ctx.group().sendMessage("异常返回,清理本次上下文");
+                        lastMessages.clear();
                     }
+                    return;
+                } catch (Exception e) {
+                    if (e instanceof BaseException be) {
+                        if (be.getMessage().contains("This model's maximum context length is")) {
+                            ctx.group().sendMessage("对话过长，已自动清理本次上下文，请重新开始");
+                            lastMessages.clear();
+                            return;
+                        }
+                    }
+                    e.printStackTrace();
                 }
-                e.printStackTrace();
-            } finally {
-                lock.unlock();
             }
+        } finally {
+            lock.unlock();
         }
         ctx.group().sendMessage("网络问题请稍后再试");
     }

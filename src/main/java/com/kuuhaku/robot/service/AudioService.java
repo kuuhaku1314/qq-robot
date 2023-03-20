@@ -217,6 +217,7 @@ class MoeGoe {
         initialized = false;
     }
 
+    // 非线程安全
     public void generate(String path, String text, boolean useChinese) throws Exception {
         if (isDestroyed) {
             throw new RuntimeException("MoeGoe is destroyed");
