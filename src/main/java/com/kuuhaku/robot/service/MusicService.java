@@ -4,16 +4,10 @@ import com.kuuhaku.robot.core.service.DownloadService;
 import com.kuuhaku.robot.entity.music.NetEaseMusic;
 import com.kuuhaku.robot.service.musicApi.NetEaseMusicApi;
 import com.kuuhaku.robot.utils.MojiUtil;
-import it.sauronsoftware.jave.AudioAttributes;
-import it.sauronsoftware.jave.Encoder;
-import it.sauronsoftware.jave.EncoderException;
-import it.sauronsoftware.jave.EncodingAttributes;
+import com.kuuhaku.robot.utils.VoiceUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MusicShare;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.mp3.MP3AudioHeader;
-import org.jaudiotagger.audio.mp3.MP3File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +23,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class MusicService {
-    private final int maxTrackLength = 300;
     @Autowired
     private DownloadService downloadService;
     @Autowired
@@ -95,76 +88,18 @@ public class MusicService {
         String amrFileName = downloadService.getRandomPath() + ".amr";
         downloadService.download(musicUrl, mp3FileName);
         File source = new File(mp3FileName);
-        File target = new File(amrFileName);
         // 为VIP歌曲下，文件为空
         if (source.length() <= 10L) {
             downloadService.deleteFile(mp3FileName);
             return null;
         }
-        AudioAttributes audio = new AudioAttributes();
-        int mp3TrackLength = getMp3TrackLength(source);
-        log.info("当前歌曲[{}]的长度为[{}]s", netEaseMusic.getName(), mp3TrackLength);
-        audio.setCodec("libamr_wb");
-        audio.setChannels(1);
-        audio.setSamplingRate(16000);
-        // 长于300S文件改成低质量格式，防止无法播放
-        if (mp3TrackLength > maxTrackLength) {
-            log.info("进行低音质转换");
-            audio.setBitRate(15850);
+        boolean isSuccess = VoiceUtil.transfer(mp3FileName, amrFileName);
+        downloadService.deleteFile(mp3FileName);
+        downloadService.deleteFile(amrFileName);
+        if (isSuccess) {
+            return amrFileName;
         } else {
-            audio.setBitRate(23850);
-        }
-        EncodingAttributes attrs = new EncodingAttributes();
-        attrs.setFormat("amr");
-        attrs.setAudioAttributes(audio);
-        Encoder encoder = new Encoder();
-        try {
-            encoder.encode(source, target, attrs);
-        } catch (EncoderException e) {
-            e.printStackTrace();
-            downloadService.deleteFile(mp3FileName);
-            downloadService.deleteFile(amrFileName);
             return null;
         }
-        downloadService.deleteFile(mp3FileName);
-        return amrFileName;
-    }
-
-    /**
-     * 返回mp3文件播放时长，单位s
-     *
-     * @param mp3File
-     * @return
-     */
-    private int getMp3TrackLength(File mp3File) {
-        try {
-            MP3File f = (MP3File) AudioFileIO.read(mp3File);
-            MP3AudioHeader audioHeader = (MP3AudioHeader) f.getAudioHeader();
-            return audioHeader.getTrackLength();
-        } catch (Exception e) {
-            log.info("读取mp3长度发生异常");
-            return 1;
-        }
-    }
-
-    public boolean mp3ToAmr(String srcPath, String tgtPath) {
-        File source = new File(srcPath);
-        File target = new File(tgtPath);
-        AudioAttributes audio = new AudioAttributes();
-        audio.setCodec("libamr_wb");
-        audio.setChannels(1);
-        audio.setSamplingRate(16000);
-        audio.setBitRate(23850);
-        EncodingAttributes attrs = new EncodingAttributes();
-        attrs.setFormat("amr");
-        attrs.setAudioAttributes(audio);
-        Encoder encoder = new Encoder();
-        try {
-            encoder.encode(source, target, attrs);
-        } catch (EncoderException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 }

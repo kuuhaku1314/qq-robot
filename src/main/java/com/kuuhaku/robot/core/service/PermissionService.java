@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,12 +34,13 @@ public class PermissionService {
     private final Set<Long> exclusionGroup = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Value("${robot.master}")
-    private Long master;
+    private Long[] masters;
 
     @PostConstruct
     void init() {
-        masterSet.add(master);
+        masterSet.addAll(Arrays.asList(masters));
     }
+
 
     public boolean masterContains(long id) {
         return masterSet.contains(id);

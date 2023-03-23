@@ -34,7 +34,7 @@ public class TaskExecutorConfig {
     };
 
     @Bean("taskExecutor")
-    public ThreadPoolExecutor getExecutor() {
+    public ThreadPoolExecutor taskExecutor() {
         return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAlive, TimeUnit.SECONDS, queue, factory);
     }
 

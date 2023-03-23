@@ -223,6 +223,14 @@ public class BilibiliService {
 
     private void recover() {
         try {
+            Path filePath = Paths.get(dumpPath);
+            File file = filePath.toFile();
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            if (!file.exists()) {
+                file.createNewFile();
+            }
             String rawStr = new String(Files.readAllBytes(Paths.get(dumpPath)));
             String[] lines = rawStr.split("\n");
             List<String> list = new ArrayList<>(Arrays.asList(lines));
@@ -244,7 +252,7 @@ public class BilibiliService {
             });
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 

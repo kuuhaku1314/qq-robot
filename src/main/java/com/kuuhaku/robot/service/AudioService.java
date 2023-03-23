@@ -226,6 +226,7 @@ class MoeGoe {
         if (!initialized) {
             ProcessBuilder pb = new ProcessBuilder(moeGoePath);
             p = pb.start();
+            // 若在linux下,字符编码则不同
             writer = new BufferedWriter(new OutputStreamWriter(p.getOutputStream(), "GBK"));
             reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "GBK"));
             initialized = true;
