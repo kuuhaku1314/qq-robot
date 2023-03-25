@@ -193,4 +193,8 @@ public class DownloadService {
     public void deleteFile(String path) {
         new File(path).delete();
     }
+
+    public String getBasePath() {
+        return basePath;
+    }
 }

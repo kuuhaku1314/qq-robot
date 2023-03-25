@@ -8,12 +8,14 @@ import com.kuuhaku.robot.common.constant.PermissionRank;
 import com.kuuhaku.robot.config.ProxyConfig;
 import com.kuuhaku.robot.core.chain.ChannelContext;
 import com.kuuhaku.robot.core.service.DownloadService;
+import com.kuuhaku.robot.core.service.VoiceService;
 import com.kuuhaku.robot.entity.Quiz;
 import com.kuuhaku.robot.service.AudioService;
 import com.kuuhaku.robot.service.PetPetService;
 import com.kuuhaku.robot.service.QuizService;
 import com.kuuhaku.robot.service.RepeatService;
 import com.kuuhaku.robot.utils.ThreadUtil;
+import com.kuuhaku.robot.utils.VoiceUtil;
 import com.unfbx.chatgpt.OpenAiClient;
 import com.unfbx.chatgpt.entity.chat.ChatChoice;
 import com.unfbx.chatgpt.entity.chat.ChatCompletionResponse;
@@ -26,10 +28,7 @@ import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.FlashImage;
-import net.mamoe.mirai.message.data.Image;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageUtils;
+import net.mamoe.mirai.message.data.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +51,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RepeatHandler {
     private static final ReentrantLock chatLock = new ReentrantLock();
     private static final ConcurrentHashMap<String, ImmutablePair<ReentrantLock, List<Message>>> messagesMap = new ConcurrentHashMap<>();
-    private static boolean sendGIF = true;
+    private static boolean sendGIF = false;
     @Value("${robot.openai.host}")
     public String openAIHost;
     @Value("${robot.openai.api.key}")
@@ -69,6 +68,8 @@ public class RepeatHandler {
     private AudioService audioService;
     @Autowired
     private PetPetHandler petPetHandler;
+    @Autowired
+    private VoiceService voiceService;
     @Autowired
     private ProxyConfig proxyConfig;
     private OpenAiClient openAiClient;
@@ -263,11 +264,11 @@ public class RepeatHandler {
     public void clean(ChannelContext ctx) {
         chatLock.lock();
         ImmutablePair<ReentrantLock, List<Message>> pair = messagesMap.get(ctx.groupIdStr());
+        chatLock.unlock();
         if (pair == null) {
             ctx.group().sendMessage("当前上下文为空");
             return;
         }
-        chatLock.unlock();
         pair.getLeft().lock();
         pair.getRight().clear();
         pair.getLeft().unlock();
@@ -294,5 +295,14 @@ public class RepeatHandler {
     @Handler(values = {"gif加速"}, types = {HandlerMatchType.CONTAINS}, description = "2倍加速gif")
     public void fastGIFFalse(ChannelContext ctx) {
         petPetService.fastGIF(ctx.event());
+    }
+
+    @Permission(level = PermissionRank.MASTER)
+    @Handler(values = {"发送语音"}, types = {HandlerMatchType.START}, description = "发送语音")
+    public void sendVoice(ChannelContext ctx) {
+        String path = downloadService.getRandomPath();
+        VoiceUtil.transfer(downloadService.getBasePath() + ctx.command().params().get(0).trim(), path);
+        Audio audio = voiceService.uploadAudio(path, (Group) ctx.group());
+        ctx.group().sendMessage(voiceService.parseMsgChainByAudio(audio));
     }
 }
